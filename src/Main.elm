@@ -142,6 +142,18 @@ getRandomBlock seed =
             |> (,) newSeed
 
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    if model.playing then
+        Sub.batch
+            [ AF.times Tick
+            , KB.downs handleDownKey
+            , KB.ups handleUpKey
+            ]
+    else
+        Sub.none
+
+
 type Msg
     = Tick Time.Time
     | TogglePlay
@@ -423,6 +435,8 @@ viewPlayField model =
             |> Element.toHtml
 
 
+-- Main
+
 main : Program Never Model Msg
 main =
     Html.program
@@ -431,15 +445,3 @@ main =
         , update = update
         , subscriptions = subscriptions
     }
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    if model.playing then
-        Sub.batch
-            [ AF.times Tick
-            , KB.downs handleDownKey
-            , KB.ups handleUpKey
-            ]
-    else
-        Sub.none
