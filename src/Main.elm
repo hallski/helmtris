@@ -64,8 +64,6 @@ zBlock =
     ]
 
 
-type alias Position = (Int, Int)
-
 -- Once the blocks have landed, copy their location over to the PlayField
 type alias Cell = (Int, Int)
 
