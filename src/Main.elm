@@ -38,17 +38,17 @@ availableBlocks =
 
 iBlock : Grid
 iBlock =
-    [ List.map (flip (,) <| 0) <| List.range 0 3 ]
+    [ [ (0, 0), (1, 0), (2, 0), (3, 0) ] ]
 
 jBlock : Grid
 jBlock =
-    [ List.map (flip (,) <| 1) <| List.range 0 2
+    [ [ (0, 1), (1, 1), (2, 1) ]
     , [ (2, 1) ]
     ]
 
 lBlock : Grid
 lBlock =
-    [ List.map (flip (,) <| 2) <| List.range 0 2
+    [ [ (0, 2), (1, 2), (2, 2) ]
     , [ (0, 2) ]
     ]
 
@@ -66,7 +66,7 @@ sBlock =
 
 tBlock : Grid
 tBlock =
-    [ List.map (flip (,) <| 5) <| List.range 0 2
+    [ [ (0, 5), (1, 5), (2, 5) ]
     , [ (1, 5) ]
     ]
 
@@ -311,7 +311,7 @@ getColor shapeId =
         2 -> purple
         3 -> blue
         4 -> green
-        5 -> blue
+        5 -> darkGreen
         6 -> brown
         _ -> white
 
