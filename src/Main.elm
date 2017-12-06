@@ -28,6 +28,7 @@ playFieldDimensions =
     }
 
 
+-- TODO: Extract Block.elm
 availableBlocks : List Block
 availableBlocks =
     [ iBlock
@@ -83,6 +84,12 @@ zBlock =
     makeBlock 5 brown [ [ 0, 1 ], [ 1, 2 ] ]
 
 
+blockGridInFieldCoords : Block -> Grid
+blockGridInFieldCoords block =
+    block.grid
+        |> List.map (\l -> List.map (Tuple.mapFirst ((+) block.x)) l)
+
+
 -- Once the blocks have landed, copy their location over to the PlayField
 type alias Cell = (Int, Color)
 
@@ -95,7 +102,6 @@ type alias Block =
     , y : Int
     , grid : Grid
     }
-
 
 
 emptyGrid : Grid
@@ -126,6 +132,7 @@ init =
 getRandomBlock : Random.Seed -> (Random.Seed, Block)
 getRandomBlock seed =
     let
+        -- Todo, get initial seed from random command
         generator = Random.int 0 <| List.length availableBlocks - 1
         (random, newSeed) = Random.step generator seed
     in
@@ -201,17 +208,18 @@ move dx block =
 rotate : Block -> Block
 rotate block =
     let
+        -- Needs refactoring
         flattened = List.indexedMap (\y cellList -> List.map (\cell -> ((Tuple.first cell, y), Tuple.second cell)) cellList) (List.reverse block.grid)
                         |> List.concat
 
-        foobar row ((x, y), c) =
+        maybeMapYToX row ((x, y), c) =
             if row == x then
                 Just (y, c)
             else
                 Nothing
 
         newGrid = List.range 0 (blockWidth block - 1)
-                    |> List.map (\row -> List.filterMap (foobar row) flattened)
+                    |> List.map (\row -> List.filterMap (maybeMapYToX row) flattened)
     in
         { block | grid = newGrid }
 
@@ -221,6 +229,7 @@ updateActiveBlock model time =
     if time < model.nextDrop then
         model
     else
+        -- Needs refactoring
         let
             block = model.activeBlock
             proposedBlock = { block | y = block.y + 1 }
@@ -274,26 +283,24 @@ removeFullRows grid =
 copyBlock : Block -> Grid -> Grid
 copyBlock block grid =
     let
-        movedBlockGrid = block.grid
-            |> List.map (\l -> List.map (Tuple.mapFirst ((+) block.x)) l)
+        aboveRows = List.take block.y grid
+        fromBlockRows = List.drop block.y grid
+        belowRows = List.drop (blockHeight block) fromBlockRows
 
-        a = List.take block.y grid
-        fromY = List.drop block.y grid
-        toChange = List.take (blockHeight block) fromY
-        b = List.drop (blockHeight block) fromY
-
-        new = List.map2 List.append movedBlockGrid toChange
+        replacedRows = fromBlockRows
+                        |> List.take (blockHeight block)
+                        |> List.map2 List.append (blockGridInFieldCoords block)
     in
-        List.concat [a, new, b]
+        List.concat [aboveRows, replacedRows, belowRows]
 
 
 detectCollision : Block -> Grid -> Bool
 detectCollision block grid =
     let
-        fullRow =
+        stopRow =
             List.range 0 9 |> List.map (flip (,) gray)
 
-        gridWithStop = List.append grid [fullRow]
+        gridWithStop = List.append grid [stopRow]
         findCollisionsInRows blockRow landedRow =
             let
                 blockXs = List.map Tuple.first blockRow |> List.map ((+) block.x)
@@ -305,7 +312,6 @@ detectCollision block grid =
         List.drop block.y gridWithStop
             |> List.map2 findCollisionsInRows block.grid
             |> List.any Basics.identity
-
 
 
 renderLine : List Cell -> List Collage.Form -> List Collage.Form
