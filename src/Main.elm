@@ -10,19 +10,31 @@ import Element
 import Time
 import AnimationFrame as AF
 import Keyboard as KB
+import Random
 
 
-gridSize : Int
-gridSize = 25
+cellSize : Int
+cellSize = 25
 
 playFieldSize : { cols : Int, rows : Int}
 playFieldSize = { cols = 10, rows = 20 }
 
 playFieldDimensions : { width : Int, height : Int}
 playFieldDimensions =
-    { width = playFieldSize.cols * gridSize
-    , height = playFieldSize.rows * gridSize
+    { width = playFieldSize.cols * cellSize
+    , height = playFieldSize.rows * cellSize
     }
+
+availableBlocks : List Grid
+availableBlocks =
+    [ iBlock
+    , jBlock
+    , lBlock
+    , oBlock
+    , sBlock
+    , tBlock
+    , zBlock
+    ]
 
 iBlock : Grid
 iBlock =
@@ -36,7 +48,7 @@ jBlock =
 
 lBlock : Grid
 lBlock =
-    [ List.map (flip (,) <| 0) <| List.range 0 2
+    [ List.map (flip (,) <| 2) <| List.range 0 2
     , [ (0, 2) ]
     ]
 
@@ -54,7 +66,7 @@ sBlock =
 
 tBlock : Grid
 tBlock =
-    [ List.map (flip (,) <| 0) <| List.range 0 2
+    [ List.map (flip (,) <| 5) <| List.range 0 2
     , [ (1, 5) ]
     ]
 
@@ -77,6 +89,7 @@ type alias Block =
     }
 
 
+fullRow : List Cell
 fullRow =
     List.range 0 9
         |> List.map (\x -> (x, 10))
@@ -84,12 +97,6 @@ fullRow =
 emptyGrid : Grid
 emptyGrid =
     List.repeat playFieldSize.rows []
-
-
--- For testing
-newBlock : Block
-newBlock =
-    Block 1 0 jBlock
 
 
 type alias Model =
@@ -100,13 +107,28 @@ type alias Model =
     , dropping : Bool
     , score : Int
     , activeBlock : Block
+    , seed : Random.Seed
     }
 
 
 init : (Model, Cmd Msg)
 init =
-    ( Model False False emptyGrid 0 False 0 <| Block 3 0 iBlock, Cmd.none )
+    let
+        (seed, block) = getRandomBlock <| Random.initialSeed 0
+    in
+        ( Model False False emptyGrid 0 False 0 block seed, Cmd.none )
 
+
+getRandomBlock seed =
+    let
+        generator = Random.int 0 <| List.length availableBlocks - 1
+        (random, newSeed) = Random.step generator seed
+    in
+        List.drop random availableBlocks
+            |> List.head
+            |> Maybe.withDefault oBlock
+            |> Block 3 0
+            |> (,) newSeed
 
 type Msg
     = Tick Time.Time
@@ -206,7 +228,7 @@ updateActiveBlock model time =
         in
             if detectCollision proposedBlock model.landed then
                 let
-                    newActive = newBlock
+                    (seed, newActive) = getRandomBlock model.seed
                     landed = copyBlock block model.landed
                     (removed, newLanded) = removeFullRows landed
 
@@ -216,8 +238,9 @@ updateActiveBlock model time =
                     else
                         { model
                         | landed = newLanded
-                        , activeBlock = newBlock
+                        , activeBlock = newActive
                         , nextDrop = nextDrop
+                        , seed = seed
                         , score = model.score + removed * 10
                         }
             else
@@ -283,11 +306,11 @@ getColor shapeId =
     case shapeId of
         0 -> red
         1 -> orange
-        2 -> lightPurple
+        2 -> purple
         3 -> blue
         4 -> green
-        5 -> brown
-        6 -> purple
+        5 -> blue
+        6 -> brown
         _ -> white
 
 
@@ -299,9 +322,9 @@ renderLine line rendered =
 
         (pos, color) :: rest ->
             let
-                renderedCell = Collage.rect (toFloat gridSize) (toFloat gridSize)
+                renderedCell = Collage.rect (toFloat cellSize) (toFloat cellSize)
                                 |> Collage.filled (getColor color)
-                                |> Collage.move ((toFloat (pos * gridSize)), 0)
+                                |> Collage.move ((toFloat (pos * cellSize)), 0)
             in
                 renderLine rest <| renderedCell :: rendered
 
@@ -318,7 +341,7 @@ renderLines xOffset yOffset lines rendered =
                     renderLine line []
                         |> Collage.groupTransform (Transform.translation xOffset yOffset)
             in
-                renderLines xOffset (yOffset + (toFloat gridSize)) rest <| renderedLine :: rendered
+                renderLines xOffset (yOffset + (toFloat cellSize)) rest <| renderedLine :: rendered
 
 
 renderGrid : Float -> Float -> Grid -> Collage.Form
@@ -330,8 +353,8 @@ renderGrid xOffset yOffset grid =
 renderBlock : Block -> Collage.Form
 renderBlock block =
     let
-        xOffset = (toFloat (block.x * gridSize))
-        yOffset = (toFloat (block.y * gridSize))
+        xOffset = (toFloat (block.x * cellSize))
+        yOffset = (toFloat (block.y * cellSize))
     in
         renderGrid xOffset yOffset block.grid
 
@@ -340,14 +363,14 @@ renderBlock block =
   Simplify the rendering code by applying a transformation on all forms drawn.
 
   Since Collage in elm-graphics puts origin in the center with Y growing upwards and draws all
-  forms anchored to the center as well, flip the Y axis and translate origin to be half a gridSize
+  forms anchored to the center as well, flip the Y axis and translate origin to be half a cellSize
   in from the top left.
 --}
 canvasTranslation : Transform.Transform
 canvasTranslation =
     let
-        startX = -(toFloat (playFieldDimensions.width - gridSize)) / 2
-        startY = -(toFloat (playFieldDimensions.height - gridSize)) / 2
+        startX = -(toFloat (playFieldDimensions.width - cellSize)) / 2
+        startY = -(toFloat (playFieldDimensions.height - cellSize)) / 2
     in
         Transform.multiply (Transform.scaleY -1) (Transform.translation startX startY)
 
