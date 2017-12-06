@@ -11,6 +11,7 @@ import Time
 import AnimationFrame as AF
 import Keyboard as KB
 
+
 gridSize : Int
 gridSize = 25
 
@@ -149,6 +150,11 @@ blockWidth { grid } =
         maximumWithDefault 0 <| List.map rowWidth grid
 
 
+blockHeight : Block -> Int
+blockHeight { grid } =
+    List.length grid
+
+
 move : Int -> Block -> Block
 move dx block =
     let
@@ -178,12 +184,20 @@ updateActiveBlock model time =
                 { model | activeBlock = proposedBlock, nextDrop = nextDrop}
 
 
-
-
 copyBlock : Block -> Grid -> Grid
 copyBlock block grid =
-    -- Copy the block.grid onto grid
-    grid
+    let
+        movedBlockGrid = block.grid
+            |> List.map (\l -> List.map (Tuple.mapFirst ((+) block.x)) l)
+
+        a = List.take block.y grid
+        fromY = List.drop block.y grid
+        toChange = List.take (blockHeight block) fromY
+        b = List.drop (blockHeight block) fromY
+
+        new = List.map2 List.append movedBlockGrid toChange
+    in
+        List.concat [a, new, b]
 
 
 detectCollision : Block -> Grid -> Bool
@@ -303,7 +317,6 @@ viewPlayField model =
     let
         forms = [ renderGrid 0 0 model.landed
                 , renderBlock model.activeBlock
-                , Collage.rect 25 25 |> Collage.filled darkBlue |> Collage.move (0, 0)
                 ]
     in
         Collage.collage playFieldDimensions.width playFieldDimensions.height
