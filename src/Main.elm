@@ -76,18 +76,14 @@ type alias Block =
     , grid : Grid
     }
 
+
+fullRow =
+    List.range 0 9
+        |> List.map (\x -> (x, 10))
+
 emptyGrid : Grid
 emptyGrid =
     List.repeat playFieldSize.rows []
-
-
-demoGrid : Grid
-demoGrid =
-    let
-        grid = List.append (List.take 18 emptyGrid)
-                [ [(1, 3), (8, 4)] , [(1, 3), (2, 3), (6, 6), (0, 5)] ]
-    in
-        grid
 
 
 -- For testing
@@ -98,6 +94,7 @@ newBlock =
 
 type alias Model =
     { playing : Bool
+    , gameOver : Bool
     , landed : Grid
     , nextDrop : Time.Time
     , dropping : Bool
@@ -108,7 +105,7 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-    ( Model False demoGrid 0 False 0 <| Block 3 0 iBlock, Cmd.none )
+    ( Model False False emptyGrid 0 False 0 <| Block 3 0 iBlock, Cmd.none )
 
 
 type Msg
@@ -209,18 +206,26 @@ updateActiveBlock model time =
         in
             if detectCollision proposedBlock model.landed then
                 let
+                    newActive = newBlock
                     landed = copyBlock block model.landed
                     (removed, newLanded) = removeFullRows landed
+
                 in
-                { model
-                | landed = newLanded
-                , activeBlock = newBlock
-                , nextDrop = nextDrop
-                , score = model.score + removed * 10
-                }
+                    if detectCollision newActive newLanded then
+                        gameOver model
+                    else
+                        { model
+                        | landed = newLanded
+                        , activeBlock = newBlock
+                        , nextDrop = nextDrop
+                        , score = model.score + removed * 10
+                        }
             else
                 { model | activeBlock = proposedBlock, nextDrop = nextDrop}
 
+
+gameOver model =
+    { model | playing = False, gameOver = True}
 
 padGrid : Int -> Grid -> Grid
 padGrid nr grid =
@@ -235,7 +240,6 @@ removeFullRows : Grid -> (Int, Grid)
 removeFullRows grid =
     let
         newGrid = List.filter (\l -> List.length l /= playFieldSize.cols) grid
-                    |> Debug.log("Newgrid")
         removed = (List.length grid) - (List.length newGrid)
     in
         (removed, padGrid removed newGrid)
@@ -260,6 +264,7 @@ copyBlock block grid =
 detectCollision : Block -> Grid -> Bool
 detectCollision block grid =
     let
+        gridWithStop = List.append grid [fullRow]
         findCollisionsInRows blockRow landedRow =
             let
                 blockXs = List.map Tuple.first blockRow |> List.map ((+) block.x)
@@ -268,7 +273,7 @@ detectCollision block grid =
                 List.map (flip List.member blockXs) landedXs
                     |> List.any Basics.identity
     in
-        List.drop block.y grid
+        List.drop block.y gridWithStop
             |> List.map2 findCollisionsInRows block.grid
             |> List.any Basics.identity
 
@@ -351,9 +356,10 @@ view : Model -> Html Msg
 view model =
     let
         togglePlayStr = if model.playing then "Pause" else "Start"
+        str = if model.gameOver then "GAME OVER with score: " else "Score: "
     in
         div [ ]
-            [ text <| "Score: " ++ (toString model.score)
+            [ text <| str ++ (toString model.score)
             , viewPlayField model
             , button [ onClick TogglePlay ] [ text togglePlayStr ]
             ]
@@ -368,14 +374,15 @@ handleDownKey code =
             Right
         87 ->
             Rotate
-        32 ->
+        83 ->
             DropStart
         _ ->
             NoOp
 
+handleUpKey : KeyCode -> Msg
 handleUpKey code =
     case code of
-        32 ->
+        83 ->
             DropStop
         _ ->
             NoOp
