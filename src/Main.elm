@@ -9,7 +9,6 @@ import Transform exposing (..)
 import Element
 import Time
 import AnimationFrame as AF
-import Json.Decode as Json
 import Keyboard as KB
 
 gridSize : Int
@@ -101,11 +100,11 @@ init =
 
 
 type Msg
-    = NoOp
-    | Tick Time.Time
+    = Tick Time.Time
     | TogglePlay
     | Left
     | Right
+    | NoOp -- Needed by handleKey
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -129,7 +128,17 @@ update msg model =
 
 moveDropping : Int -> Block -> Block
 moveDropping dx ((x, y), g) =
-    ((x + dx, y), g)
+    let
+        maxInRow l =
+            l
+            |> List.map Tuple.first
+            |> List.maximum
+            |> Maybe.withDefault 0
+
+        maxX = List.map maxInRow g |> List.maximum |> Maybe.withDefault 0
+        newX = clamp 0 (playFieldSize.cols - maxX - 1) <| x + dx
+    in
+        ((newX, y), g)
 
 
 updateDropping : Model -> Time.Time -> Model
@@ -258,6 +267,7 @@ main =
         , update = update
         , subscriptions = subscriptions
     }
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
