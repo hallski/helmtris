@@ -247,8 +247,10 @@ updateActiveBlock model time =
                 { model | activeBlock = proposedBlock, nextDrop = nextDrop}
 
 
+gameOver : Model -> Model
 gameOver model =
     { model | playing = False, gameOver = True}
+
 
 padGrid : Int -> Grid -> Grid
 padGrid nr grid =
