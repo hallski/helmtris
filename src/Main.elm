@@ -52,33 +52,6 @@ zBlock =
     , [ (1, 6), (2, 6) ]
     ]
 
-{-- Blocks
-  I [ [ 1 1 1 1 ] ]
-
-  J [ [ 2, 2, 2 ]
-    , [ 0, 0, 2 ]
-    ]
-
-  L [ [ 3, 3, 3 ]
-    , [ 3, 0, 0 ]
-    ]
-
-  O [ [ 4, 4 ]
-    . [ 4. 4 ]
-    ]
-
-  S [ [ 0, 5, 5 ]
-    , [ 5, 5, 0 ]
-    ]
-
-  Z [ [ 6, 6, 0 ]
-    , [ 0, 6, 6 ]
-    ]
-
-  T [ [ 7, 7, 7 ]
-    , [ 0, 7, 0 ]
-    ]
---}
 
 type Msg = NoOp
 
@@ -156,7 +129,6 @@ renderLines xOffset yOffset lines rendered =
 
         line :: rest ->
             let
-                _ = yOffset |> Debug.log("yOffset")
                 renderedLine =
                     renderLine line []
                         |> Collage.groupTransform (Transform.translation xOffset yOffset)
@@ -174,11 +146,6 @@ startX =
 
 startY =
     (toFloat (playFieldDimensions.height - gridSize)) / 2
-        |> Debug.log("StartY")
-
-renderLanded : Grid -> Collage.Form
-renderLanded =
-    renderGrid startX startY
 
 
 view : Model -> Html Msg
@@ -190,7 +157,7 @@ view model =
 
         xOffset = startX + (toFloat (x * gridSize))
         yOffset = startY - (toFloat (y * gridSize))
-        forms = [ renderLanded model.landed
+        forms = [ renderGrid startX startY model.landed
                 , renderGrid xOffset yOffset g
                 , Collage.rect 25 25 |> Collage.filled brown |> Collage.move (-100, startY)
                 ]
