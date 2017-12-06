@@ -25,7 +25,7 @@ playFieldDimensions =
     , height = playFieldSize.rows * cellSize
     }
 
-availableBlocks : List Grid
+availableBlocks : List Block
 availableBlocks =
     [ iBlock
     , jBlock
@@ -36,49 +36,52 @@ availableBlocks =
     , zBlock
     ]
 
-iBlock : Grid
+
+makeBlock : Int -> Color -> List (List Int) -> Block
+makeBlock startX color thing =
+    let
+        grid = flip List.map thing <| List.map (\x -> (x, color))
+    in
+        Block startX 0 grid
+
+
+iBlock : Block
 iBlock =
-    [ [ (0, 0), (1, 0), (2, 0), (3, 0) ] ]
+    makeBlock 3 red [ List.range 0 3 ]
 
-jBlock : Grid
+
+jBlock : Block
 jBlock =
-    [ [ (0, 1), (1, 1), (2, 1) ]
-    , [ (2, 1) ]
-    ]
+    makeBlock 4 orange [ [ 0, 1, 2 ] , [ 2 ] ]
 
-lBlock : Grid
+
+lBlock : Block
 lBlock =
-    [ [ (0, 2), (1, 2), (2, 2) ]
-    , [ (0, 2) ]
-    ]
+    makeBlock 4 purple [ [ 0, 1, 2 ], [ 0 ] ]
 
-oBlock : Grid
+
+oBlock : Block
 oBlock =
-    [ [ (0, 3), (1, 3) ]
-    , [ (0, 3), (1, 3) ]
-    ]
+    makeBlock 5 blue [ [ 0, 1 ], [ 0, 1 ] ]
 
-sBlock : Grid
+
+sBlock : Block
 sBlock =
-    [ [ (1, 4), (2, 4) ]
-    , [ (0, 4), (1, 4) ]
-    ]
+    makeBlock 5 green [ [ 1, 2 ], [ 0, 1 ] ]
 
-tBlock : Grid
+
+tBlock : Block
 tBlock =
-    [ [ (0, 5), (1, 5), (2, 5) ]
-    , [ (1, 5) ]
-    ]
+    makeBlock 4 darkGreen [ [ 0, 1, 2 ], [ 1 ] ]
 
-zBlock : Grid
+
+zBlock : Block
 zBlock =
-    [ [ (0, 6), (1, 6) ]
-    , [ (1, 6), (2, 6) ]
-    ]
+    makeBlock 5 brown [ [ 0, 1 ], [ 1, 2 ] ]
 
 
 -- Once the blocks have landed, copy their location over to the PlayField
-type alias Cell = (Int, Int)
+type alias Cell = (Int, Color)
 
 type alias Grid = List (List Cell)
 
@@ -92,7 +95,8 @@ type alias Block =
 fullRow : List Cell
 fullRow =
     List.range 0 9
-        |> List.map (\x -> (x, 10))
+        |> List.map (\x -> (x, gray))
+
 
 emptyGrid : Grid
 emptyGrid =
@@ -119,6 +123,7 @@ init =
         ( Model False False emptyGrid 0 False 0 block seed, Cmd.none )
 
 
+getRandomBlock : Random.Seed -> (Random.Seed, Block)
 getRandomBlock seed =
     let
         generator = Random.int 0 <| List.length availableBlocks - 1
@@ -127,8 +132,8 @@ getRandomBlock seed =
         List.drop random availableBlocks
             |> List.head
             |> Maybe.withDefault oBlock
-            |> Block 3 0
             |> (,) newSeed
+
 
 type Msg
     = Tick Time.Time
@@ -299,18 +304,6 @@ detectCollision block grid =
             |> List.any Basics.identity
 
 
-getColor : Int -> Color
-getColor shapeId =
-    case shapeId of
-        0 -> red
-        1 -> orange
-        2 -> purple
-        3 -> blue
-        4 -> green
-        5 -> darkGreen
-        6 -> brown
-        _ -> white
-
 
 renderLine : List Cell -> List Collage.Form -> List Collage.Form
 renderLine line rendered =
@@ -321,7 +314,7 @@ renderLine line rendered =
         (pos, color) :: rest ->
             let
                 renderedCell = Collage.rect (toFloat cellSize) (toFloat cellSize)
-                                |> Collage.filled (getColor color)
+                                |> Collage.filled color
                                 |> Collage.move ((toFloat (pos * cellSize)), 0)
             in
                 renderLine rest <| renderedCell :: rendered
