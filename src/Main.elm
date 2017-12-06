@@ -100,13 +100,14 @@ type alias Model =
     { playing : Bool
     , landed : Grid
     , nextDrop : Time.Time
+    , dropping : Bool
     , activeBlock : Block
     }
 
 
 init : (Model, Cmd Msg)
 init =
-    ( Model False demoGrid 0 <| Block 3 0 iBlock, Cmd.none )
+    ( Model False demoGrid 0 False <| Block 3 0 iBlock, Cmd.none )
 
 
 type Msg
@@ -115,6 +116,8 @@ type Msg
     | Left
     | Right
     | Rotate
+    | DropStart
+    | DropStop
     | NoOp -- Needed by handleKey
 
 
@@ -135,6 +138,12 @@ update msg model =
 
         Rotate ->
             ( { model | activeBlock = rotate model.activeBlock }, Cmd.none )
+
+        DropStart ->
+            ( { model | dropping = True }, Cmd.none)
+
+        DropStop ->
+            ( { model | dropping = False }, Cmd.none)
 
         NoOp ->
             ( model, Cmd.none )
@@ -194,7 +203,8 @@ updateActiveBlock model time =
         let
             block = model.activeBlock
             proposedBlock = { block | y = block.y + 1 }
-            nextDrop = time + 200 * Time.millisecond
+            interval = if model.dropping then 50 else 200
+            nextDrop = time + interval * Time.millisecond
         in
             if detectCollision proposedBlock model.landed then
                 { model
@@ -323,8 +333,8 @@ view model =
             ]
 
 
-handleKey : KeyCode -> Msg
-handleKey code =
+handleDownKey : KeyCode -> Msg
+handleDownKey code =
     case code of
         65 ->
             Left
@@ -332,9 +342,17 @@ handleKey code =
             Right
         87 ->
             Rotate
+        32 ->
+            DropStart
         _ ->
             NoOp
 
+handleUpKey code =
+    case code of
+        32 ->
+            DropStop
+        _ ->
+            NoOp
 
 viewPlayField : Model -> Html Msg
 viewPlayField model =
@@ -364,7 +382,8 @@ subscriptions model =
     if model.playing then
         Sub.batch
             [ AF.times Tick
-            , KB.downs handleKey
+            , KB.downs handleDownKey
+            , KB.ups handleUpKey
             ]
     else
         Sub.none
