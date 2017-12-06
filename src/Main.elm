@@ -16,14 +16,17 @@ import Random
 cellSize : Int
 cellSize = 25
 
+
 playFieldSize : { cols : Int, rows : Int}
 playFieldSize = { cols = 10, rows = 20 }
+
 
 playFieldDimensions : { width : Int, height : Int}
 playFieldDimensions =
     { width = playFieldSize.cols * cellSize
     , height = playFieldSize.rows * cellSize
     }
+
 
 availableBlocks : List Block
 availableBlocks =
@@ -83,7 +86,9 @@ zBlock =
 -- Once the blocks have landed, copy their location over to the PlayField
 type alias Cell = (Int, Color)
 
+
 type alias Grid = List (List Cell)
+
 
 type alias Block =
     { x : Int
@@ -91,11 +96,6 @@ type alias Block =
     , grid : Grid
     }
 
-
-fullRow : List Cell
-fullRow =
-    List.range 0 9
-        |> List.map (\x -> (x, gray))
 
 
 emptyGrid : Grid
@@ -290,6 +290,9 @@ copyBlock block grid =
 detectCollision : Block -> Grid -> Bool
 detectCollision block grid =
     let
+        fullRow =
+            List.range 0 9 |> List.map (flip (,) gray)
+
         gridWithStop = List.append grid [fullRow]
         findCollisionsInRows blockRow landedRow =
             let
