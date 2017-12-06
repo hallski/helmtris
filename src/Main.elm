@@ -8,8 +8,49 @@ import Element
 import Dict exposing (..)
 
 
-gridSize = 30
-playFieldDimensions = { width = 10, height = 20 }
+gridSize : Int
+gridSize = 25
+playFieldSize = { cols = 10, rows = 20 }
+playFieldDimensions =
+    { width = playFieldSize.cols * gridSize
+    , height = playFieldSize.rows * gridSize
+    }
+
+f c x = (x, c)
+
+iBlock : Grid
+iBlock =
+    [ List.map (f 0) <| List.range 0 3 ]
+
+jBlock =
+    [ List.map (f 1) <| List.range 0 2
+    , [ (2, 1) ]
+    ]
+
+lBlock =
+    [ List.map (f 2) <| List.range 0 2
+    , [ (0, 2) ]
+    ]
+
+oBlock =
+    [ [ (0, 3), (1, 3) ]
+    , [ (0, 3), (1, 3) ]
+    ]
+
+sBlock =
+    [ [ (1, 4), (2, 4) ]
+    , [ (0, 4), (1, 4) ]
+    ]
+
+tBlock =
+    [ List.map (f 5) <| List.range 0 2
+    , [ (1, 5) ]
+    ]
+
+zBlock =
+    [ [ (0, 6), (1, 6) ]
+    , [ (1, 6), (2, 6) ]
+    ]
 
 {-- Blocks
   I [ [ 1 1 1 1 ] ]
@@ -52,39 +93,45 @@ type alias Grid = List (List Cell)
 
 emptyGrid : Grid
 emptyGrid =
-    List.repeat playFieldDimensions.height []
+    List.repeat playFieldSize.rows []
 
 
 demoGrid : Grid
 demoGrid =
     let
-        grid = [(1, 3), (2, 3), (6, 6), (0, 5)] :: [(1, 3), (8, 4)] :: List.take 18 emptyGrid
+        grid = List.append (List.take 18 emptyGrid)
+                [ [(1, 3), (8, 4)] , [(1, 3), (2, 3), (6, 6), (0, 5)] ]
     in
         grid
 
+
 type alias Model =
-    { landed : PlayField
+    { landed : Grid
+    , dropping : (Position, Grid)
     }
 
-init =
-    ( Model Dict.empty, Cmd.none )
 
+init : (Model, Cmd Msg)
+init =
+    ( Model demoGrid <| ((3, 0), iBlock), Cmd.none )
+
+
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     ( model, Cmd.none )
 
-view model =
-    viewPlayField model.landed
 
 getColor : Int -> Color
 getColor shapeId =
     case shapeId of
-        1 -> red
-        2 -> purple
-        3 -> yellow
-        4 -> orange
-        5 -> lightPurple
-        6 -> red
-        _ -> gray
+        0 -> red
+        1 -> orange
+        2 -> lightPurple
+        3 -> blue
+        4 -> green
+        5 -> brown
+        6 -> purple
+        _ -> white
 
 renderLine : List Cell -> List Collage.Form -> List Collage.Form
 renderLine line rendered =
@@ -94,42 +141,63 @@ renderLine line rendered =
 
         (pos, color) :: rest ->
             let
-                renderedCell = Collage.rect gridSize gridSize
+                renderedCell = Collage.rect (toFloat gridSize) (toFloat gridSize)
                                 |> Collage.filled (getColor color)
-                                |> Collage.move ((toFloat pos) * gridSize, 0)
+                                |> Collage.move ((toFloat (pos * gridSize)), 0)
             in
                 renderLine rest <| renderedCell :: rendered
 
 
-renderLines : Grid -> Float -> List Collage.Form ->  List Collage.Form
-renderLines lines yOffset rendered =
+renderLines : Float -> Float -> Grid -> List Collage.Form ->  List Collage.Form
+renderLines xOffset yOffset lines rendered =
     case lines of
         [] ->
             rendered
 
         line :: rest ->
             let
+                _ = yOffset |> Debug.log("yOffset")
                 renderedLine =
                     renderLine line []
-                        |> Collage.groupTransform (Transform.translation -135 yOffset)
+                        |> Collage.groupTransform (Transform.translation xOffset yOffset)
             in
-                renderLines rest (yOffset + gridSize) <| renderedLine :: rendered
+                renderLines xOffset (yOffset - (toFloat gridSize)) rest <| renderedLine :: rendered
 
 
-renderGrid : Grid -> List Collage.Form
-renderGrid grid =
-    renderLines grid -285 []
+renderGrid : Float -> Float -> Grid -> Collage.Form
+renderGrid xOffset yOffset grid =
+    renderLines xOffset yOffset grid []
+        |> Collage.group
 
-viewPlayField : PlayField -> Html Msg
-viewPlayField playField =
+startX =
+    -(toFloat (playFieldDimensions.width - gridSize)) / 2
+
+startY =
+    (toFloat (playFieldDimensions.height - gridSize)) / 2
+        |> Debug.log("StartY")
+
+renderLanded : Grid -> Collage.Form
+renderLanded =
+    renderGrid startX startY
+
+
+view : Model -> Html Msg
+view model =
     let
-        rendered = renderGrid demoGrid
-                    |> Debug.log("Rendered")
-    in
+        ((x, y), g) = model.dropping
 
-    Collage.collage (playFieldDimensions.width * gridSize) (playFieldDimensions.height * gridSize) rendered
-    |> Element.color gray
-    |> Element.toHtml
+        _ = model.dropping |> Debug.log("Meh")
+
+        xOffset = startX + (toFloat (x * gridSize))
+        yOffset = startY - (toFloat (y * gridSize))
+        forms = [ renderLanded model.landed
+                , renderGrid xOffset yOffset g
+                , Collage.rect 25 25 |> Collage.filled brown |> Collage.move (-100, startY)
+                ]
+    in
+        Collage.collage playFieldDimensions.width playFieldDimensions.height forms
+            |> Element.color gray
+            |> Element.toHtml
 
 
 main : Program Never Model Msg
