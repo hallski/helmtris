@@ -104,7 +104,7 @@ type alias Model =
     , gameOver : Bool
     , landed : Grid
     , nextDrop : Time.Time
-    , dropping : Bool
+    , boost : Bool
     , score : Int
     , activeBlock : Block
     , seed : Random.Seed
@@ -136,8 +136,7 @@ type Msg
     | Left
     | Right
     | Rotate
-    | DropStart
-    | DropStop
+    | Boost Bool
     | NoOp -- Needed by handleKey
 
 
@@ -159,11 +158,8 @@ update msg model =
         Rotate ->
             ( { model | activeBlock = rotate model.activeBlock }, Cmd.none )
 
-        DropStart ->
-            ( { model | dropping = True }, Cmd.none)
-
-        DropStop ->
-            ( { model | dropping = False }, Cmd.none)
+        Boost on ->
+            ( { model | boost = on }, Cmd.none)
 
         NoOp ->
             ( model, Cmd.none )
@@ -223,7 +219,7 @@ updateActiveBlock model time =
         let
             block = model.activeBlock
             proposedBlock = { block | y = block.y + 1 }
-            interval = if model.dropping then 50 else 200
+            interval = if model.boost then 50 else 200
             nextDrop = time + interval * Time.millisecond
         in
             if detectCollision proposedBlock model.landed then
@@ -400,7 +396,7 @@ handleDownKey code =
         87 ->
             Rotate
         83 ->
-            DropStart
+            Boost True
         _ ->
             NoOp
 
@@ -408,7 +404,7 @@ handleUpKey : KeyCode -> Msg
 handleUpKey code =
     case code of
         83 ->
-            DropStop
+            Boost False
         _ ->
             NoOp
 
