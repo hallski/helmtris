@@ -101,13 +101,14 @@ type alias Model =
     , landed : Grid
     , nextDrop : Time.Time
     , dropping : Bool
+    , score : Int
     , activeBlock : Block
     }
 
 
 init : (Model, Cmd Msg)
 init =
-    ( Model False demoGrid 0 False <| Block 3 0 iBlock, Cmd.none )
+    ( Model False demoGrid 0 False 0 <| Block 3 0 iBlock, Cmd.none )
 
 
 type Msg
@@ -207,13 +208,37 @@ updateActiveBlock model time =
             nextDrop = time + interval * Time.millisecond
         in
             if detectCollision proposedBlock model.landed then
+                let
+                    landed = copyBlock block model.landed
+                    (removed, newLanded) = removeFullRows landed
+                in
                 { model
-                | landed = copyBlock block model.landed
+                | landed = newLanded
                 , activeBlock = newBlock
                 , nextDrop = nextDrop
+                , score = model.score + removed * 10
                 }
             else
                 { model | activeBlock = proposedBlock, nextDrop = nextDrop}
+
+
+padGrid : Int -> Grid -> Grid
+padGrid nr grid =
+    case nr of
+        0 ->
+            grid
+        n ->
+            padGrid (n - 1) <| [] :: grid
+
+
+removeFullRows : Grid -> (Int, Grid)
+removeFullRows grid =
+    let
+        newGrid = List.filter (\l -> List.length l /= playFieldSize.cols) grid
+                    |> Debug.log("Newgrid")
+        removed = (List.length grid) - (List.length newGrid)
+    in
+        (removed, padGrid removed newGrid)
 
 
 copyBlock : Block -> Grid -> Grid
@@ -328,7 +353,8 @@ view model =
         togglePlayStr = if model.playing then "Pause" else "Start"
     in
         div [ ]
-            [ viewPlayField model
+            [ text <| "Score: " ++ (toString model.score)
+            , viewPlayField model
             , button [ onClick TogglePlay ] [ text togglePlayStr ]
             ]
 
