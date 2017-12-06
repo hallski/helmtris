@@ -58,8 +58,6 @@ type Msg = NoOp
 type alias Position = (Int, Int)
 
 -- Once the blocks have landed, copy their location over to the PlayField
-type alias PlayField = Dict Position Color
-
 type alias Cell = (Int, Int)
 
 type alias Grid = List (List Cell)
