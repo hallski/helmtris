@@ -70,7 +70,11 @@ type alias Position = (Int, Int)
 type alias Cell = (Int, Int)
 
 type alias Grid = List (List Cell)
-type alias Block = (Position, Grid)
+type alias Block =
+    { x : Int
+    , y : Int
+    , grid : Grid
+    }
 
 emptyGrid : Grid
 emptyGrid =
@@ -90,13 +94,13 @@ type alias Model =
     { playing : Bool
     , landed : Grid
     , nextDrop : Time.Time
-    , dropping : Block
+    , activeBlock : Block
     }
 
 
 init : (Model, Cmd Msg)
 init =
-    ( Model False demoGrid 0 <| ((3, 0), iBlock), Cmd.none )
+    ( Model False demoGrid 0 <| Block 3 0 iBlock, Cmd.none )
 
 
 type Msg
@@ -111,47 +115,55 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Tick time ->
-            ( updateDropping model time, Cmd.none )
+            ( updateActiveBlock model time, Cmd.none )
 
         TogglePlay ->
             ( { model | playing = not model.playing }, Cmd.none )
 
         Left ->
-            ( { model | dropping = moveDropping -1 model.dropping }, Cmd.none )
+            ( { model | activeBlock = move -1 model.activeBlock }, Cmd.none )
 
         Right ->
-            ( { model | dropping = moveDropping 1 model.dropping }, Cmd.none )
+            ( { model | activeBlock = move 1 model.activeBlock }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
 
 
-moveDropping : Int -> Block -> Block
-moveDropping dx ((x, y), g) =
+maximumWithDefault : comparable -> List comparable -> comparable
+maximumWithDefault default =
+    Maybe.withDefault default << List.maximum
+
+
+blockWidth : Block -> Int
+blockWidth { grid } =
     let
-        maxInRow l =
-            l
-            |> List.map Tuple.first
-            |> List.maximum
-            |> Maybe.withDefault 0
-
-        maxX = List.map maxInRow g |> List.maximum |> Maybe.withDefault 0
-        newX = clamp 0 (playFieldSize.cols - maxX - 1) <| x + dx
+        rowWidth =
+             maximumWithDefault 0 << List.map Tuple.first
     in
-        ((newX, y), g)
+        maximumWithDefault 0 <| List.map rowWidth grid
 
 
-updateDropping : Model -> Time.Time -> Model
-updateDropping model time =
+move : Int -> Block -> Block
+move dx block =
+    let
+        maxX = playFieldSize.cols - (blockWidth block) - 1
+        newX = clamp 0 maxX <| block.x + dx
+    in
+        { block | x = newX }
+
+
+updateActiveBlock : Model -> Time.Time -> Model
+updateActiveBlock model time =
     if time < model.nextDrop then
         model
     else
         let
-            ((x, y), g) = model.dropping
-            newBlock = ((x, y + 1), g)
+            block = model.activeBlock
+            newBlock = { block | y = block.y + 1 }
             -- Check collision
         in
-            { model | dropping = newBlock, nextDrop = time + Time.second }
+            { model | activeBlock = newBlock, nextDrop = time + Time.second }
 
 
 getColor : Int -> Color
@@ -203,6 +215,15 @@ renderGrid xOffset yOffset grid =
         |> Collage.group
 
 
+renderBlock : Block -> Collage.Form
+renderBlock block =
+    let
+        xOffset = (toFloat (block.x * gridSize))
+        yOffset = (toFloat (block.y * gridSize))
+    in
+        renderGrid xOffset yOffset block.grid
+
+
 {--
   Simplify the rendering code by applying a transformation on all forms drawn.
 
@@ -244,12 +265,8 @@ handleKey code =
 viewPlayField : Model -> Html Msg
 viewPlayField model =
     let
-        ((x, y), g) = model.dropping
-
-        xOffset = (toFloat (x * gridSize))
-        yOffset = (toFloat (y * gridSize))
         forms = [ renderGrid 0 0 model.landed
-                , renderGrid xOffset yOffset g
+                , renderBlock model.activeBlock
                 , Collage.rect 25 25 |> Collage.filled darkBlue |> Collage.move (0, 0)
                 ]
     in
