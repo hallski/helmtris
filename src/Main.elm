@@ -114,6 +114,7 @@ type Msg
     | TogglePlay
     | Left
     | Right
+    | Rotate
     | NoOp -- Needed by handleKey
 
 
@@ -132,6 +133,9 @@ update msg model =
         Right ->
             ( { model | activeBlock = move 1 model.activeBlock }, Cmd.none )
 
+        Rotate ->
+            ( { model | activeBlock = rotate model.activeBlock }, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -147,7 +151,7 @@ blockWidth { grid } =
         rowWidth =
              maximumWithDefault 0 << List.map Tuple.first
     in
-        maximumWithDefault 0 <| List.map rowWidth grid
+        maximumWithDefault 0 <| List.map ((+) 1) <| List.map rowWidth grid
 
 
 blockHeight : Block -> Int
@@ -158,10 +162,28 @@ blockHeight { grid } =
 move : Int -> Block -> Block
 move dx block =
     let
-        maxX = playFieldSize.cols - (blockWidth block) - 1
+        maxX = playFieldSize.cols - (blockWidth block)
         newX = clamp 0 maxX <| block.x + dx
     in
         { block | x = newX }
+
+
+rotate : Block -> Block
+rotate block =
+    let
+        flattened = List.indexedMap (\y cellList -> List.map (\cell -> ((Tuple.first cell, y), Tuple.second cell)) cellList) (List.reverse block.grid)
+                        |> List.concat
+
+        foobar row ((x, y), c) =
+            if row == x then
+                Just (y, c)
+            else
+                Nothing
+
+        newGrid = List.range 0 (blockWidth block - 1)
+                    |> List.map (\row -> List.filterMap (foobar row) flattened)
+    in
+        { block | grid = newGrid }
 
 
 updateActiveBlock : Model -> Time.Time -> Model
@@ -308,6 +330,8 @@ handleKey code =
             Left
         68 ->
             Right
+        87 ->
+            Rotate
         _ ->
             NoOp
 
