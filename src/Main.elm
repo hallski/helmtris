@@ -29,7 +29,7 @@ iBlock =
 
 jBlock : Grid
 jBlock =
-    [ List.map (flip (,) <| 0) <| List.range 0 2
+    [ List.map (flip (,) <| 1) <| List.range 0 2
     , [ (2, 1) ]
     ]
 
@@ -68,6 +68,7 @@ zBlock =
 type alias Cell = (Int, Int)
 
 type alias Grid = List (List Cell)
+
 type alias Block =
     { x : Int
     , y : Int
@@ -86,6 +87,12 @@ demoGrid =
                 [ [(1, 3), (8, 4)] , [(1, 3), (2, 3), (6, 6), (0, 5)] ]
     in
         grid
+
+
+-- For testing
+newBlock : Block
+newBlock =
+    Block 1 0 jBlock
 
 
 type alias Model =
@@ -158,10 +165,41 @@ updateActiveBlock model time =
     else
         let
             block = model.activeBlock
-            newBlock = { block | y = block.y + 1 }
-            -- Check collision
+            proposedBlock = { block | y = block.y + 1 }
+            nextDrop = time + 200 * Time.millisecond
         in
-            { model | activeBlock = newBlock, nextDrop = time + Time.second }
+            if detectCollision proposedBlock model.landed then
+                { model
+                | landed = copyBlock block model.landed
+                , activeBlock = newBlock
+                , nextDrop = nextDrop
+                }
+            else
+                { model | activeBlock = proposedBlock, nextDrop = nextDrop}
+
+
+
+
+copyBlock : Block -> Grid -> Grid
+copyBlock block grid =
+    -- Copy the block.grid onto grid
+    grid
+
+
+detectCollision : Block -> Grid -> Bool
+detectCollision block grid =
+    let
+        findCollisionsInRows blockRow landedRow =
+            let
+                blockXs = List.map Tuple.first blockRow |> List.map ((+) block.x)
+                landedXs = List.map Tuple.first landedRow
+            in
+                List.map (flip List.member blockXs) landedXs
+                    |> List.any Basics.identity
+    in
+        List.drop block.y grid
+            |> List.map2 findCollisionsInRows block.grid
+            |> List.any Basics.identity
 
 
 getColor : Int -> Color
