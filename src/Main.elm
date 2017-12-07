@@ -89,7 +89,7 @@ update msg model =
             ( model, Cmd.none )
 
 
-modifyActiveBlock : Model -> (Grid.Grid -> Block.Block -> Result String Block.Block) -> (Model, Cmd Msg)
+modifyActiveBlock : Model -> Block.BlockManipulation -> (Model, Cmd Msg)
 modifyActiveBlock model fn =
     case fn model.landed model.activeBlock of
         Ok block ->

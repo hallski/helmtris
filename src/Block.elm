@@ -1,5 +1,6 @@
 module Block exposing
     ( Block
+    , BlockManipulation
     , getRandom
     , detectCollisionInGrid
     , render
@@ -99,20 +100,20 @@ toGrid : Block -> Grid.Grid
 toGrid (Block block) =
     Grid.mapCells (Tuple.mapFirst ((+) block.x)) block.grid
 
-
-moveOn : Int -> Grid.Grid -> Block -> Result String Block
+type alias BlockManipulation = Grid.Grid -> Block -> Result String Block
+moveOn : Int -> BlockManipulation
 moveOn dx grid (Block block) =
     Block { block | x = block.x + dx }
         |> validateOnGrid grid
 
 
-moveYOn : Int -> Grid.Grid -> Block -> Result String Block
+moveYOn : Int -> BlockManipulation
 moveYOn dy grid (Block block) =
     Block { block | y = block.y + dy }
         |> validateOnGrid grid
 
 
-rotateOn : Grid.Grid -> Block -> Result String Block
+rotateOn : BlockManipulation
 rotateOn grid (Block block) =
     Block { block | grid = Grid.rotate block.grid }
         |> validateOnGrid grid
