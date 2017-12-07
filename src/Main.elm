@@ -152,24 +152,30 @@ subscriptions model =
 handleDownKey : KeyCode -> Msg
 handleDownKey code =
     case code of
-        65 ->
-            Left
-        68 ->
-            Right
-        87 ->
-            Rotate
-        83 ->
-            Boost True
-        _ ->
-            NoOp
+        -- WASD
+        65 -> Left
+        68 -> Right
+        87 -> Rotate
+        83 -> Boost True
+
+        -- Arrow keys
+        37 -> Left
+        38 -> Rotate
+        39 -> Right
+        40 -> Boost True
+
+        _ -> NoOp
 
 handleUpKey : KeyCode -> Msg
 handleUpKey code =
     case code of
-        83 ->
-            Boost False
-        _ ->
-            NoOp
+        -- WASD
+        83 -> Boost False
+
+        -- Arrow keys
+        40 -> Boost False
+
+        _ -> NoOp
 
 
 -- View
