@@ -1,15 +1,15 @@
 module Block exposing (..)
 
-import Grid exposing (Grid)
-import Helpers exposing (maximumWithDefault)
+import Grid
 
 import Color exposing (..)
 import Random
+import Collage
 
 type alias Block =
     { x : Int
     , y : Int
-    , grid : Grid
+    , grid : Grid.Grid
     }
 
 
@@ -18,7 +18,7 @@ makeBlock startX color thing =
     let
         grid = flip List.map thing <| List.map (\x -> (x, color))
     in
-        Block startX 0 grid
+        Block startX 0 <| Grid.fromListsOfCells grid
 
 
 iBlock : Block
@@ -83,22 +83,17 @@ getRandomBlock seed =
 
 blockWidth : Block -> Int
 blockWidth { grid } =
-    let
-        rowWidth =
-             maximumWithDefault 0 << List.map Tuple.first
-    in
-        maximumWithDefault 0 <| List.map ((+) 1) <| List.map rowWidth grid
+    Grid.width grid
 
 
 blockHeight : Block -> Int
 blockHeight { grid } =
-    List.length grid
+    Grid.height grid
 
 
-toGrid : Block -> Grid
+toGrid : Block -> Grid.Grid
 toGrid block =
-    block.grid
-        |> List.map (\l -> List.map (Tuple.mapFirst ((+) block.x)) l)
+    Grid.mapCells (Tuple.mapFirst ((+) block.x)) block.grid
 
 move : Int -> Int -> Int -> Block -> Block
 move minX maxX dx block =
@@ -110,19 +105,14 @@ move minX maxX dx block =
 
 rotate : Block -> Block
 rotate block =
+    { block | grid = Grid.rotate block.grid }
+
+
+render : Block -> Collage.Form
+render block =
     let
-        -- Needs refactoring
-        flattened = List.indexedMap (\y cellList -> List.map (\cell -> ((Tuple.first cell, y), Tuple.second cell)) cellList) (List.reverse block.grid)
-                        |> List.concat
-
-        maybeMapYToX row ((x, y), c) =
-            if row == x then
-                Just (y, c)
-            else
-                Nothing
-
-        newGrid = List.range 0 (blockWidth block - 1)
-                    |> List.map (\row -> List.filterMap (maybeMapYToX row) flattened)
+        xOffset = (toFloat (block.x * Grid.cellSize))
+        yOffset = (toFloat (block.y * Grid.cellSize))
     in
-        { block | grid = newGrid }
+        Grid.render xOffset yOffset block.grid
 

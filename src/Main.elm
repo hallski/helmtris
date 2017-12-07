@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Grid exposing (..)
+import Grid
 import Block exposing (..)
 
 import Color exposing (..)
@@ -15,9 +15,6 @@ import AnimationFrame as AF
 import Keyboard as KB
 import Random
 
-cellSize : Int
-cellSize = 25
-
 
 playFieldSize : { cols : Int, rows : Int}
 playFieldSize = { cols = 10, rows = 20 }
@@ -25,15 +22,15 @@ playFieldSize = { cols = 10, rows = 20 }
 
 playFieldDimensions : { width : Int, height : Int}
 playFieldDimensions =
-    { width = playFieldSize.cols * cellSize
-    , height = playFieldSize.rows * cellSize
+    { width = playFieldSize.cols * Grid.cellSize
+    , height = playFieldSize.rows * Grid.cellSize
     }
 
 
 type alias Model =
     { playing : Bool
     , gameOver : Bool
-    , landed : Grid
+    , landed : Grid.Grid
     , nextDrop : Time.Time
     , boost : Bool
     , score : Int
@@ -46,7 +43,7 @@ init : (Model, Cmd Msg)
 init =
     let
         (seed, block) = getRandomBlock <| Random.initialSeed 0
-        grid = emptyGrid playFieldSize.rows
+        grid = Grid.emptyGrid playFieldSize.rows
     in
         ( Model False False grid 0 False 0 block seed, Cmd.none )
 
@@ -137,14 +134,14 @@ updateActiveBlock model time =
             interval = if model.boost then 50 else 200
             nextDrop = time + interval * Time.millisecond
         in
-            if detectCollision proposedBlock.y (toGrid proposedBlock) model.landed then
+            if Grid.detectCollision proposedBlock.y (toGrid proposedBlock) model.landed then
                 let
                     (seed, newActive) = getRandomBlock model.seed
                     landed = Grid.copyOnto block.y (toGrid block) model.landed
-                    (removed, newLanded) = removeFullRows playFieldSize.cols landed
+                    (removed, newLanded) = Grid.removeFullRows playFieldSize.cols landed
 
                 in
-                    if detectCollision newActive.y (toGrid newActive) newLanded then
+                    if Grid.detectCollision newActive.y (toGrid newActive) newLanded then
                         gameOver model
                     else
                         { model
@@ -163,51 +160,6 @@ gameOver model =
     { model | playing = False, gameOver = True}
 
 
-renderLine : List Cell -> List Collage.Form -> List Collage.Form
-renderLine line rendered =
-    case line of
-        [] ->
-            rendered
-
-        (pos, color) :: rest ->
-            let
-                renderedCell = Collage.rect (toFloat cellSize) (toFloat cellSize)
-                                |> Collage.filled color
-                                |> Collage.move ((toFloat (pos * cellSize)), 0)
-            in
-                renderLine rest <| renderedCell :: rendered
-
-
-renderLines : Float -> Float -> Grid -> List Collage.Form -> List Collage.Form
-renderLines xOffset yOffset lines rendered =
-    case lines of
-        [] ->
-            rendered
-
-        line :: rest ->
-            let
-                renderedLine =
-                    renderLine line []
-                        |> Collage.groupTransform (Transform.translation xOffset yOffset)
-            in
-                renderLines xOffset (yOffset + (toFloat cellSize)) rest <| renderedLine :: rendered
-
-
-renderGrid : Float -> Float -> Grid -> Collage.Form
-renderGrid xOffset yOffset grid =
-    renderLines xOffset yOffset grid []
-        |> Collage.group
-
-
-renderBlock : Block -> Collage.Form
-renderBlock block =
-    let
-        xOffset = (toFloat (block.x * cellSize))
-        yOffset = (toFloat (block.y * cellSize))
-    in
-        renderGrid xOffset yOffset block.grid
-
-
 {--
   Simplify the rendering code by applying a transformation on all forms drawn.
 
@@ -218,8 +170,8 @@ renderBlock block =
 canvasTranslation : Transform.Transform
 canvasTranslation =
     let
-        startX = -(toFloat (playFieldDimensions.width - cellSize)) / 2
-        startY = -(toFloat (playFieldDimensions.height - cellSize)) / 2
+        startX = -(toFloat (playFieldDimensions.width - Grid.cellSize)) / 2
+        startY = -(toFloat (playFieldDimensions.height - Grid.cellSize)) / 2
     in
         Transform.multiply (Transform.scaleY -1) (Transform.translation startX startY)
 
@@ -240,8 +192,8 @@ view model =
 viewPlayField : Model -> Html Msg
 viewPlayField model =
     let
-        forms = [ renderGrid 0 0 model.landed
-                , renderBlock model.activeBlock
+        forms = [ Grid.render 0 0 model.landed
+                , Block.render model.activeBlock
                 ]
     in
         Collage.collage playFieldDimensions.width playFieldDimensions.height
