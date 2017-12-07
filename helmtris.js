@@ -12782,10 +12782,13 @@ var _user$project$Main$Boost = function (a) {
 };
 var _user$project$Main$handleUpKey = function (code) {
 	var _p6 = code;
-	if (_p6 === 83) {
-		return _user$project$Main$Boost(false);
-	} else {
-		return _user$project$Main$NoOp;
+	switch (_p6) {
+		case 83:
+			return _user$project$Main$Boost(false);
+		case 40:
+			return _user$project$Main$Boost(false);
+		default:
+			return _user$project$Main$NoOp;
 	}
 };
 var _user$project$Main$Rotate = {ctor: 'Rotate'};
@@ -12801,6 +12804,14 @@ var _user$project$Main$handleDownKey = function (code) {
 		case 87:
 			return _user$project$Main$Rotate;
 		case 83:
+			return _user$project$Main$Boost(true);
+		case 37:
+			return _user$project$Main$Left;
+		case 38:
+			return _user$project$Main$Rotate;
+		case 39:
+			return _user$project$Main$Right;
+		case 40:
 			return _user$project$Main$Boost(true);
 		default:
 			return _user$project$Main$NoOp;
