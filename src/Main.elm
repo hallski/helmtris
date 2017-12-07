@@ -67,50 +67,84 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Tick time ->
-            ( updateActiveBlock model time, Cmd.none )
+            model
+                |> updateActiveBlock time
+                |> noCmd
 
         TogglePlay ->
-            ( { model | playing = not model.playing }, Cmd.none )
+            model
+                |> togglePlaying
+                |> noCmd
 
         Left ->
-            modifyActiveBlock model <| Block.moveOn -1
+            model
+                |> modifyActiveBlock (Block.moveOn -1)
+                |> noCmd
 
         Right ->
-            modifyActiveBlock model <| Block.moveOn 1
+            model
+                |> modifyActiveBlock (Block.moveOn 1)
+                |> noCmd
 
         Rotate ->
-            modifyActiveBlock model <| Block.rotateOn
+            model
+                |> modifyActiveBlock Block.rotateOn
+                |> noCmd
 
-        Boost on ->
-            ( { model | boost = on }, Cmd.none)
+        Boost onOff ->
+            model
+                |> setBoost onOff
+                |> noCmd
 
         Reset ->
             init
 
         SetSeed randomInt ->
-            if model.playing then
-                ( model, Cmd.none )
-            else
-                let
-                    (seed, newActive) = Block.getRandom <| Random.initialSeed randomInt
-                in
-                    ( { model | seed = seed, activeBlock = newActive }, Cmd.none )
+            model
+                |> reseed randomInt
+                |> noCmd
 
         NoOp ->
-            ( model, Cmd.none )
+            model |> noCmd
 
 
-modifyActiveBlock : Model -> Block.BlockManipulation -> (Model, Cmd Msg)
-modifyActiveBlock model fn =
+togglePlaying : Model -> Model
+togglePlaying model =
+    { model | playing = not model.playing }
+
+
+setBoost : Bool -> Model -> Model
+setBoost onOff model =
+    { model | boost = onOff }
+
+
+reseed : Int -> Model -> Model
+reseed newSeed model =
+    if model.playing then
+        model -- Ignore new seed if game is already started
+    else
+        let
+            (seed, newActive) = Block.getRandom <| Random.initialSeed newSeed
+        in
+            { model | seed = seed, activeBlock = newActive }
+
+
+noCmd : Model -> (Model, Cmd Msg)
+noCmd model =
+    ( model, Cmd.none )
+
+
+modifyActiveBlock : Block.BlockManipulation -> Model -> Model
+modifyActiveBlock fn model =
     case fn model.landed model.activeBlock of
         Ok block ->
-            ( { model | activeBlock = block }, Cmd.none )
+            { model | activeBlock = block }
         Err msg ->
-            ( model, Cmd.none )
+            model
 
 
-updateActiveBlock : Model -> Time.Time -> Model
-updateActiveBlock model time =
+updateActiveBlock : Time.Time -> Model -> Model
+updateActiveBlock time model =
     if time < model.nextDrop then
         model
     else
