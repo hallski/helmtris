@@ -1,4 +1,13 @@
-module Block exposing (..)
+module Block exposing
+    ( Block
+    , getRandom
+    , detectCollisionInGrid
+    , render
+    , copyOntoGrid
+    , move
+    , moveY
+    , rotate
+    )
 
 import Grid
 
@@ -23,6 +32,7 @@ makeBlock startX color thing =
             , y = 0
             , grid = Grid.fromListsOfCells grid
             }
+
 
 iBlock : Block
 iBlock =
@@ -71,8 +81,8 @@ availableBlocks =
     ]
 
 
-getRandomBlock : Random.Seed -> (Random.Seed, Block)
-getRandomBlock seed =
+getRandom : Random.Seed -> (Random.Seed, Block)
+getRandom seed =
     let
         -- Todo, get initial seed from random command
         generator = Random.int 0 <| List.length availableBlocks - 1
@@ -82,16 +92,6 @@ getRandomBlock seed =
             |> List.head
             |> Maybe.withDefault oBlock
             |> (,) newSeed
-
-
-blockWidth : Block -> Int
-blockWidth (Block { grid }) =
-    Grid.width grid
-
-
-blockHeight : Block -> Int
-blockHeight (Block { grid }) =
-    Grid.height grid
 
 
 toGrid : Block -> Grid.Grid

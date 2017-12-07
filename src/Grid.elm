@@ -1,4 +1,16 @@
-module Grid exposing (..)
+module Grid exposing
+    ( Grid
+    , cellSize
+    , copyOnto
+    , detectCollision
+    , empty
+    , fromListsOfCells
+    , mapCells
+    , removeFullRows
+    , render
+    , rotate
+    , width
+    )
 
 import Color exposing (Color, gray)
 import Collage
@@ -12,8 +24,8 @@ cellSize : Int
 cellSize = 25
 
 
-emptyGrid : Int -> Grid
-emptyGrid rows =
+empty : Int -> Grid
+empty rows =
     Grid <| List.repeat rows []
 
 

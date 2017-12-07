@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Grid
-import Block exposing (..)
+import Block
 
 import Color exposing (..)
 import Html exposing (..)
@@ -34,7 +34,7 @@ type alias Model =
     , nextDrop : Time.Time
     , boost : Bool
     , score : Int
-    , activeBlock : Block
+    , activeBlock : Block.Block
     , seed : Random.Seed
     }
 
@@ -42,8 +42,8 @@ type alias Model =
 init : (Model, Cmd Msg)
 init =
     let
-        (seed, block) = getRandomBlock <| Random.initialSeed 0
-        grid = Grid.emptyGrid playFieldSize.rows
+        (seed, block) = Block.getRandom <| Random.initialSeed 0
+        grid = Grid.empty playFieldSize.rows
     in
         ( Model False False grid 0 False 0 block seed, Cmd.none )
 
@@ -92,7 +92,7 @@ type Msg
     | NoOp -- Needed by handleKey
 
 
-clampedMoveBlock : Int -> Block -> Block
+clampedMoveBlock : Int -> Block.Block -> Block.Block
 clampedMoveBlock =
     Block.move 0 playFieldSize.cols
 
@@ -113,7 +113,7 @@ update msg model =
             ( { model | activeBlock = clampedMoveBlock 1 model.activeBlock }, Cmd.none )
 
         Rotate ->
-            ( { model | activeBlock = rotate model.activeBlock }, Cmd.none )
+            ( { model | activeBlock = Block.rotate model.activeBlock }, Cmd.none )
 
         Boost on ->
             ( { model | boost = on }, Cmd.none)
@@ -136,7 +136,7 @@ updateActiveBlock model time =
         in
             if Block.detectCollisionInGrid proposedBlock model.landed then
                 let
-                    (seed, newActive) = getRandomBlock model.seed
+                    (seed, newActive) = Block.getRandom model.seed
                     landed = Block.copyOntoGrid block model.landed
                     (removed, newLanded) = Grid.removeFullRows playFieldSize.cols landed
 
