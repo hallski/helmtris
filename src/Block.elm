@@ -4,9 +4,9 @@ module Block exposing
     , detectCollisionInGrid
     , render
     , copyOntoGrid
-    , move
-    , moveY
-    , rotate
+    , moveOn
+    , moveYOn
+    , rotateOn
     )
 
 import Grid
@@ -100,24 +100,52 @@ toGrid (Block block) =
     Grid.mapCells (Tuple.mapFirst ((+) block.x)) block.grid
 
 
-move : Int -> Int -> Int -> Block -> Block
-move minX maxX dx (Block block) =
-    let
-        maxStartX = maxX - (Grid.width block.grid)
-        newX = clamp minX maxStartX <| block.x + dx
-    in
-        Block { block | x = newX }
+moveOn : Int -> Grid.Grid -> Block -> Result String Block
+moveOn dx grid (Block block) =
+    Block { block | x = block.x + dx }
+        |> validateOnGrid grid
 
 
-moveY : Int -> Block -> Block
-moveY dy (Block block) =
+moveYOn : Int -> Grid.Grid -> Block -> Result String Block
+moveYOn dy grid (Block block) =
     Block { block | y = block.y + dy }
+        |> validateOnGrid grid
 
 
-rotate : Block -> Block
-rotate (Block block) =
+rotateOn : Grid.Grid -> Block -> Result String Block
+rotateOn grid (Block block) =
     Block { block | grid = Grid.rotate block.grid }
+        |> validateOnGrid grid
 
+
+validateOnGrid : Grid.Grid -> Block -> Result String Block
+validateOnGrid grid block =
+    boardPositiveX block
+        |> Result.andThen (boardWithinGridWidth grid)
+        |> Result.andThen (withoutCollision grid)
+
+boardPositiveX : Block -> Result String Block
+boardPositiveX (Block block) =
+    if block.x >= 0 then
+        Ok <| Block block
+    else
+        Err "Board X is negative"
+
+
+boardWithinGridWidth : Grid.Grid -> Block -> Result String Block
+boardWithinGridWidth grid (Block block) =
+    if (block.x + Grid.width block.grid) <= Grid.width grid then
+        Ok <| Block block
+    else
+        Err "Block trailed off the grid"
+
+
+withoutCollision : Grid.Grid -> Block -> Result String Block
+withoutCollision grid block =
+    if detectCollisionInGrid block grid then
+        Err "Collision occurred"
+    else
+        Ok block
 
 render : Block -> Collage.Form
 render (Block block) =

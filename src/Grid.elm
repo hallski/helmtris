@@ -19,56 +19,63 @@ import Transform
 type alias Cell = (Int, Color)
 
 
-type Grid = Grid (List (List Cell))
+type Grid = Grid Int Int (List (List Cell))
+
+
 cellSize : Int
 cellSize = 25
 
 
-empty : Int -> Grid
-empty rows =
-    Grid <| List.repeat rows []
+empty : Int -> Int -> Grid
+empty cols rows =
+    Grid cols rows <| List.repeat rows []
 
 
 fromListsOfCells : List (List Cell) -> Grid
 fromListsOfCells list =
-    Grid list
-
-
-padGrid : Int -> Grid -> Grid
-padGrid nr (Grid grid) =
-    case nr of
-        0 ->
-            Grid grid
-        n ->
-            padGrid (n - 1) <| Grid <| [] :: grid
-
-
-removeFullRows : Int -> Grid -> (Int, Grid)
-removeFullRows fullWidth (Grid grid) =
     let
-        newGrid = List.filter (\l -> List.length l /= fullWidth) grid
-        removed = (List.length grid) - (List.length newGrid)
+        maximumWithDefault default = Maybe.withDefault default << List.maximum
+
+        rowWidth = maximumWithDefault 0 << List.map Tuple.first
+        cols = maximumWithDefault 0 <| List.map ((+) 1) <| List.map rowWidth list
+        rows = List.length list
     in
-        (removed, padGrid removed (Grid newGrid))
+        Grid cols rows list
+
+
+padGrid : Grid -> Grid
+padGrid (Grid cols rows grid) =
+    if List.length grid == rows then
+        Grid cols rows grid
+    else
+        padGrid <| Grid cols rows <| [] :: grid
+
+
+removeFullRows : Grid -> (Int, Grid)
+removeFullRows (Grid cols rows grid) =
+    let
+        newGrid = List.filter (\l -> List.length l /= cols) grid
+        removed = rows - (List.length newGrid)
+    in
+        (removed, padGrid <| Grid cols rows newGrid)
 
 
 copyOnto : Int -> Grid -> Grid -> Grid
-copyOnto yOffset (Grid source) (Grid target) =
+copyOnto yOffset (Grid _ sourceRows source) (Grid tcols trows target) =
     let
-        sourceHeight = List.length source
         aboveRows = List.take yOffset target
         fromBlockRows = List.drop yOffset target
-        belowRows = List.drop sourceHeight fromBlockRows
+        belowRows = List.drop sourceRows fromBlockRows
 
         replacedRows = fromBlockRows
-                        |> List.take sourceHeight
+                        |> List.take sourceRows
                         |> List.map2 List.append source
     in
-        Grid <| List.concat [aboveRows, replacedRows, belowRows]
+        Grid tcols trows <| List.concat [aboveRows, replacedRows, belowRows]
 
 
 detectCollision : Int -> Grid -> Grid -> Bool
-detectCollision yOffset (Grid grid1) (Grid grid2) =
+detectCollision yOffset (Grid _ _ grid1) (Grid _ _ grid2) =
     let
         stopRow =
             List.range 0 9 |> List.map (flip (,) gray)
@@ -88,32 +95,24 @@ detectCollision yOffset (Grid grid1) (Grid grid2) =
 
 
 mapCells : (Cell -> Cell) -> Grid -> Grid
-mapCells fn (Grid grid) =
+mapCells fn (Grid cols rows grid) =
     let
         mapCellsInRow row = List.map fn row
     in
-        Grid <| List.map mapCellsInRow grid
+        Grid cols rows <| List.map mapCellsInRow grid
 
 
 height : Grid -> Int
-height (Grid grid) =
-    List.length grid
+height (Grid _ rows grid) =
+    rows
 
 
 width : Grid -> Int
-width (Grid grid) =
-    let
-        maximumWithDefault default =
-            Maybe.withDefault default << List.maximum
-
-        rowWidth =
-             maximumWithDefault 0 << List.map Tuple.first
-    in
-        maximumWithDefault 0 <| List.map ((+) 1) <| List.map rowWidth grid
-
+width (Grid cols _ grid) =
+    cols
 
 rotate : Grid -> Grid
-rotate (Grid grid) =
+rotate (Grid cols rows grid) =
     let
         -- Needs refactoring
         flattened = List.indexedMap (\y cellList -> List.map (\cell -> ((Tuple.first cell, y), Tuple.second cell)) cellList) (List.reverse grid)
@@ -125,10 +124,10 @@ rotate (Grid grid) =
             else
                 Nothing
 
-        newGrid = List.range 0 (width (Grid grid) - 1)
+        newGrid = List.range 0 (cols - 1)
                     |> List.map (\row -> List.filterMap (maybeMapYToX row) flattened)
     in
-        Grid newGrid
+        Grid rows cols newGrid
 
 
 renderLine : List Cell -> List Collage.Form -> List Collage.Form
@@ -162,6 +161,6 @@ renderLines xOffset yOffset lines rendered =
 
 
 render : Float -> Float -> Grid -> Collage.Form
-render xOffset yOffset (Grid lines) =
+render xOffset yOffset (Grid _ _ lines) =
     renderLines xOffset yOffset lines []
         |> Collage.group

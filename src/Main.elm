@@ -43,7 +43,7 @@ init : (Model, Cmd Msg)
 init =
     let
         (seed, block) = Block.getRandom <| Random.initialSeed 0
-        grid = Grid.empty playFieldSize.rows
+        grid = Grid.empty playFieldSize.cols playFieldSize.rows
     in
         ( Model False False grid 0 False 0 block seed, Cmd.none )
 
@@ -71,13 +71,13 @@ update msg model =
             ( { model | playing = not model.playing }, Cmd.none )
 
         Left ->
-            ( { model | activeBlock = clampedMoveBlock -1 model.activeBlock }, Cmd.none )
+            modifyActiveBlock model <| Block.moveOn -1
 
         Right ->
-            ( { model | activeBlock = clampedMoveBlock 1 model.activeBlock }, Cmd.none )
+            modifyActiveBlock model <| Block.moveOn 1
 
         Rotate ->
-            ( { model | activeBlock = Block.rotate model.activeBlock }, Cmd.none )
+            modifyActiveBlock model <| Block.rotateOn
 
         Boost on ->
             ( { model | boost = on }, Cmd.none)
@@ -89,9 +89,13 @@ update msg model =
             ( model, Cmd.none )
 
 
-clampedMoveBlock : Int -> Block.Block -> Block.Block
-clampedMoveBlock =
-    Block.move 0 playFieldSize.cols
+modifyActiveBlock : Model -> (Grid.Grid -> Block.Block -> Result String Block.Block) -> (Model, Cmd Msg)
+modifyActiveBlock model fn =
+    case fn model.landed model.activeBlock of
+        Ok block ->
+            ( { model | activeBlock = block }, Cmd.none )
+        Err msg ->
+            ( model, Cmd.none )
 
 
 updateActiveBlock : Model -> Time.Time -> Model
@@ -102,29 +106,29 @@ updateActiveBlock model time =
         -- Needs refactoring
         let
             block = model.activeBlock
-            proposedBlock = Block.moveY 1 block
-            interval = if model.boost then 50 else 200
+            proposedBlock = Block.moveYOn 1 model.landed block
+            interval = if model.boost then 50 else 400
             nextDrop = time + interval * Time.millisecond
         in
-            if Block.detectCollisionInGrid proposedBlock model.landed then
-                let
-                    (seed, newActive) = Block.getRandom model.seed
-                    landed = Block.copyOntoGrid block model.landed
-                    (removed, newLanded) = Grid.removeFullRows playFieldSize.cols landed
-
-                in
-                    if Block.detectCollisionInGrid newActive newLanded then
-                        gameOver model
-                    else
-                        { model
-                        | landed = newLanded
-                        , activeBlock = newActive
-                        , nextDrop = nextDrop
-                        , seed = seed
-                        , score = model.score + removed * 10
-                        }
-            else
-                { model | activeBlock = proposedBlock, nextDrop = nextDrop}
+            case proposedBlock of
+                Ok newBlock ->
+                    { model | activeBlock = newBlock, nextDrop = nextDrop }
+                _ ->
+                    let
+                        (seed, newActive) = Block.getRandom model.seed
+                        landed = Block.copyOntoGrid block model.landed
+                        (removed, newLanded) = Grid.removeFullRows landed
+                    in
+                        if Block.detectCollisionInGrid newActive newLanded then
+                            gameOver model
+                        else
+                            { model
+                            | landed = newLanded
+                            , activeBlock = newActive
+                            , nextDrop = nextDrop
+                            , seed = seed
+                            , score = model.score + removed * 10
+                            }
 
 
 gameOver : Model -> Model
