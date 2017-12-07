@@ -6,7 +6,7 @@ import Color exposing (..)
 import Random
 import Collage
 
-type alias Block =
+type Block = Block
     { x : Int
     , y : Int
     , grid : Grid.Grid
@@ -18,8 +18,11 @@ makeBlock startX color thing =
     let
         grid = flip List.map thing <| List.map (\x -> (x, color))
     in
-        Block startX 0 <| Grid.fromListsOfCells grid
-
+        Block
+            { x = startX
+            , y = 0
+            , grid = Grid.fromListsOfCells grid
+            }
 
 iBlock : Block
 iBlock =
@@ -82,37 +85,53 @@ getRandomBlock seed =
 
 
 blockWidth : Block -> Int
-blockWidth { grid } =
+blockWidth (Block { grid }) =
     Grid.width grid
 
 
 blockHeight : Block -> Int
-blockHeight { grid } =
+blockHeight (Block { grid }) =
     Grid.height grid
 
 
 toGrid : Block -> Grid.Grid
-toGrid block =
+toGrid (Block block) =
     Grid.mapCells (Tuple.mapFirst ((+) block.x)) block.grid
 
+
 move : Int -> Int -> Int -> Block -> Block
-move minX maxX dx block =
+move minX maxX dx (Block block) =
     let
-        maxStartX = maxX - (blockWidth block)
+        maxStartX = maxX - (Grid.width block.grid)
         newX = clamp minX maxStartX <| block.x + dx
     in
-        { block | x = newX }
+        Block { block | x = newX }
+
+
+moveY : Int -> Block -> Block
+moveY dy (Block block) =
+    Block { block | y = block.y + dy }
+
 
 rotate : Block -> Block
-rotate block =
-    { block | grid = Grid.rotate block.grid }
+rotate (Block block) =
+    Block { block | grid = Grid.rotate block.grid }
 
 
 render : Block -> Collage.Form
-render block =
+render (Block block) =
     let
         xOffset = (toFloat (block.x * Grid.cellSize))
         yOffset = (toFloat (block.y * Grid.cellSize))
     in
         Grid.render xOffset yOffset block.grid
 
+
+detectCollisionInGrid : Block -> Grid.Grid -> Bool
+detectCollisionInGrid (Block block) grid =
+    Grid.detectCollision block.y (toGrid (Block block)) grid
+
+
+copyOntoGrid : Block -> Grid.Grid -> Grid.Grid
+copyOntoGrid (Block block) grid =
+    Grid.copyOnto block.y (toGrid (Block block)) grid

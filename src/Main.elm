@@ -130,18 +130,18 @@ updateActiveBlock model time =
         -- Needs refactoring
         let
             block = model.activeBlock
-            proposedBlock = { block | y = block.y + 1 }
+            proposedBlock = Block.moveY 1 block
             interval = if model.boost then 50 else 200
             nextDrop = time + interval * Time.millisecond
         in
-            if Grid.detectCollision proposedBlock.y (toGrid proposedBlock) model.landed then
+            if Block.detectCollisionInGrid proposedBlock model.landed then
                 let
                     (seed, newActive) = getRandomBlock model.seed
-                    landed = Grid.copyOnto block.y (toGrid block) model.landed
+                    landed = Block.copyOntoGrid block model.landed
                     (removed, newLanded) = Grid.removeFullRows playFieldSize.cols landed
 
                 in
-                    if Grid.detectCollision newActive.y (toGrid newActive) newLanded then
+                    if Block.detectCollisionInGrid newActive newLanded then
                         gameOver model
                     else
                         { model
