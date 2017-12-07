@@ -11,9 +11,10 @@ module Block exposing
 
 import Grid
 
+import Collage
 import Color exposing (..)
 import Random
-import Collage
+
 
 type Block = Block
     { x : Int

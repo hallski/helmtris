@@ -12,8 +12,8 @@ module Grid exposing
     , width
     )
 
-import Color exposing (Color, gray)
 import Collage
+import Color exposing (Color, gray)
 import Transform
 
 type alias Cell = (Int, Color)
@@ -129,6 +129,7 @@ rotate (Grid grid) =
                     |> List.map (\row -> List.filterMap (maybeMapYToX row) flattened)
     in
         Grid newGrid
+
 
 renderLine : List Cell -> List Collage.Form -> List Collage.Form
 renderLine line rendered =

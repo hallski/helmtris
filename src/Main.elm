@@ -3,17 +3,17 @@ module Main exposing (main)
 import Grid
 import Block
 
-import Color exposing (..)
-import Html exposing (..)
-import Html.Events exposing (onClick, on, keyCode)
+import AnimationFrame as AF
 import Char exposing (KeyCode)
 import Collage
-import Transform exposing (..)
+import Color exposing (..)
 import Element
-import Time
-import AnimationFrame as AF
+import Html exposing (..)
+import Html.Events exposing (onClick, on, keyCode)
 import Keyboard as KB
 import Random
+import Time
+import Transform exposing (..)
 
 
 playFieldSize : { cols : Int, rows : Int}
@@ -48,39 +48,7 @@ init =
         ( Model False False grid 0 False 0 block seed, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    if model.playing then
-        Sub.batch
-            [ AF.times Tick
-            , KB.downs handleDownKey
-            , KB.ups handleUpKey
-            ]
-    else
-        Sub.none
-
-handleDownKey : KeyCode -> Msg
-handleDownKey code =
-    case code of
-        65 ->
-            Left
-        68 ->
-            Right
-        87 ->
-            Rotate
-        83 ->
-            Boost True
-        _ ->
-            NoOp
-
-handleUpKey : KeyCode -> Msg
-handleUpKey code =
-    case code of
-        83 ->
-            Boost False
-        _ ->
-            NoOp
-
+-- Update
 
 type Msg
     = Tick Time.Time
@@ -90,11 +58,6 @@ type Msg
     | Rotate
     | Boost Bool
     | NoOp -- Needed by handleKey
-
-
-clampedMoveBlock : Int -> Block.Block -> Block.Block
-clampedMoveBlock =
-    Block.move 0 playFieldSize.cols
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -120,6 +83,11 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
+
+
+clampedMoveBlock : Int -> Block.Block -> Block.Block
+clampedMoveBlock =
+    Block.move 0 playFieldSize.cols
 
 
 updateActiveBlock : Model -> Time.Time -> Model
@@ -159,6 +127,44 @@ gameOver : Model -> Model
 gameOver model =
     { model | playing = False, gameOver = True}
 
+
+-- Subscriptions
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    if model.playing then
+        Sub.batch
+            [ AF.times Tick
+            , KB.downs handleDownKey
+            , KB.ups handleUpKey
+            ]
+    else
+        Sub.none
+
+handleDownKey : KeyCode -> Msg
+handleDownKey code =
+    case code of
+        65 ->
+            Left
+        68 ->
+            Right
+        87 ->
+            Rotate
+        83 ->
+            Boost True
+        _ ->
+            NoOp
+
+handleUpKey : KeyCode -> Msg
+handleUpKey code =
+    case code of
+        83 ->
+            Boost False
+        _ ->
+            NoOp
+
+
+-- View
 
 {--
   Simplify the rendering code by applying a transformation on all forms drawn.
