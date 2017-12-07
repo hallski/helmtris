@@ -57,6 +57,7 @@ type Msg
     | Right
     | Rotate
     | Boost Bool
+    | Reset
     | NoOp -- Needed by handleKey
 
 
@@ -80,6 +81,9 @@ update msg model =
 
         Boost on ->
             ( { model | boost = on }, Cmd.none)
+
+        Reset ->
+            init
 
         NoOp ->
             ( model, Cmd.none )
@@ -192,6 +196,7 @@ view model =
             [ text <| str ++ (toString model.score)
             , viewPlayField model
             , button [ onClick TogglePlay ] [ text togglePlayStr ]
+            , button [ onClick Reset ] [ text "Reset" ]
             ]
 
 
