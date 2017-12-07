@@ -12692,7 +12692,7 @@ var _user$project$Main$canvasTranslation = function () {
 		A2(_evancz$elm_graphics$Transform$translation, startX, startY));
 }();
 var _user$project$Main$viewPlayField = function (model) {
-	var forms = {
+	var forms = model.playing ? {
 		ctor: '::',
 		_0: A3(_user$project$Grid$render, 0, 0, model.landed),
 		_1: {
@@ -12700,6 +12700,10 @@ var _user$project$Main$viewPlayField = function (model) {
 			_0: _user$project$Block$render(model.activeBlock),
 			_1: {ctor: '[]'}
 		}
+	} : {
+		ctor: '::',
+		_0: A3(_user$project$Grid$render, 0, 0, model.landed),
+		_1: {ctor: '[]'}
 	};
 	return _evancz$elm_graphics$Element$toHtml(
 		A2(
@@ -12719,6 +12723,10 @@ var _user$project$Main$Model = F8(
 	function (a, b, c, d, e, f, g, h) {
 		return {playing: a, gameOver: b, landed: c, nextDrop: d, boost: e, score: f, activeBlock: g, seed: h};
 	});
+var _user$project$Main$NoOp = {ctor: 'NoOp'};
+var _user$project$Main$SetSeed = function (a) {
+	return {ctor: 'SetSeed', _0: a};
+};
 var _user$project$Main$init = function () {
 	var grid = A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows);
 	var _p4 = _user$project$Block$getRandom(
@@ -12728,7 +12736,10 @@ var _user$project$Main$init = function () {
 	return {
 		ctor: '_Tuple2',
 		_0: A8(_user$project$Main$Model, false, false, grid, 0, false, 0, block, seed),
-		_1: _elm_lang$core$Platform_Cmd$none
+		_1: A2(
+			_elm_lang$core$Random$generate,
+			_user$project$Main$SetSeed,
+			A2(_elm_lang$core$Random$int, _elm_lang$core$Random$minInt, _elm_lang$core$Random$maxInt))
 	};
 }();
 var _user$project$Main$update = F2(
@@ -12771,18 +12782,33 @@ var _user$project$Main$update = F2(
 				};
 			case 'Reset':
 				return _user$project$Main$init;
+			case 'SetSeed':
+				if (model.playing) {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				} else {
+					var _p6 = _user$project$Block$getRandom(
+						_elm_lang$core$Random$initialSeed(_p5._0));
+					var seed = _p6._0;
+					var newActive = _p6._1;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{seed: seed, activeBlock: newActive}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				}
 			default:
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _user$project$Main$NoOp = {ctor: 'NoOp'};
 var _user$project$Main$Reset = {ctor: 'Reset'};
 var _user$project$Main$Boost = function (a) {
 	return {ctor: 'Boost', _0: a};
 };
 var _user$project$Main$handleUpKey = function (code) {
-	var _p6 = code;
-	switch (_p6) {
+	var _p7 = code;
+	switch (_p7) {
 		case 83:
 			return _user$project$Main$Boost(false);
 		case 40:
@@ -12795,8 +12821,8 @@ var _user$project$Main$Rotate = {ctor: 'Rotate'};
 var _user$project$Main$Right = {ctor: 'Right'};
 var _user$project$Main$Left = {ctor: 'Left'};
 var _user$project$Main$handleDownKey = function (code) {
-	var _p7 = code;
-	switch (_p7) {
+	var _p8 = code;
+	switch (_p8) {
 		case 65:
 			return _user$project$Main$Left;
 		case 68:
