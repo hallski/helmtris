@@ -45,7 +45,8 @@ init =
         (seed, block) = Block.getRandom <| Random.initialSeed 0
         grid = Grid.empty playFieldSize.cols playFieldSize.rows
     in
-        ( Model False False grid 0 False 0 block seed, Cmd.none )
+        ( Model False False grid 0 False 0 block seed
+        , Random.generate SetSeed (Random.int Random.minInt Random.maxInt))
 
 
 -- Update
@@ -58,6 +59,7 @@ type Msg
     | Rotate
     | Boost Bool
     | Reset
+    | SetSeed Int
     | NoOp -- Needed by handleKey
 
 
@@ -84,6 +86,15 @@ update msg model =
 
         Reset ->
             init
+
+        SetSeed randomInt ->
+            if model.playing then
+                ( model, Cmd.none )
+            else
+                let
+                    (seed, newActive) = Block.getRandom <| Random.initialSeed randomInt
+                in
+                    ( { model | seed = seed, activeBlock = newActive }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -213,9 +224,13 @@ view model =
 viewPlayField : Model -> Html Msg
 viewPlayField model =
     let
-        forms = [ Grid.render 0 0 model.landed
-                , Block.render model.activeBlock
-                ]
+        forms = if model.playing then
+                    [ Grid.render 0 0 model.landed
+                    , Block.render model.activeBlock
+                    ]
+                else
+                    [ Grid.render 0 0 model.landed ]
+
     in
         Collage.collage playFieldDimensions.width playFieldDimensions.height
             [ Collage.groupTransform canvasTranslation forms ]
