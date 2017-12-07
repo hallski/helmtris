@@ -100,6 +100,7 @@ width (Grid grid) =
         maximumWithDefault 0 <| List.map ((+) 1) <| List.map rowWidth grid
 
 
+rotate : Grid -> Grid
 rotate (Grid grid) =
     let
         -- Needs refactoring
