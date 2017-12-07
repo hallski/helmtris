@@ -1,5 +1,8 @@
 module Main exposing (main)
 
+import Grid exposing (..)
+import Block exposing (..)
+
 import Color exposing (..)
 import Html exposing (..)
 import Html.Events exposing (onClick, on, keyCode)
@@ -11,7 +14,6 @@ import Time
 import AnimationFrame as AF
 import Keyboard as KB
 import Random
-
 
 cellSize : Int
 cellSize = 25
@@ -26,87 +28,6 @@ playFieldDimensions =
     { width = playFieldSize.cols * cellSize
     , height = playFieldSize.rows * cellSize
     }
-
-
--- TODO: Extract Block.elm
-availableBlocks : List Block
-availableBlocks =
-    [ iBlock
-    , jBlock
-    , lBlock
-    , oBlock
-    , sBlock
-    , tBlock
-    , zBlock
-    ]
-
-
-makeBlock : Int -> Color -> List (List Int) -> Block
-makeBlock startX color thing =
-    let
-        grid = flip List.map thing <| List.map (\x -> (x, color))
-    in
-        Block startX 0 grid
-
-
-iBlock : Block
-iBlock =
-    makeBlock 3 red [ List.range 0 3 ]
-
-
-jBlock : Block
-jBlock =
-    makeBlock 4 orange [ [ 0, 1, 2 ] , [ 2 ] ]
-
-
-lBlock : Block
-lBlock =
-    makeBlock 4 purple [ [ 0, 1, 2 ], [ 0 ] ]
-
-
-oBlock : Block
-oBlock =
-    makeBlock 5 blue [ [ 0, 1 ], [ 0, 1 ] ]
-
-
-sBlock : Block
-sBlock =
-    makeBlock 5 green [ [ 1, 2 ], [ 0, 1 ] ]
-
-
-tBlock : Block
-tBlock =
-    makeBlock 4 darkGreen [ [ 0, 1, 2 ], [ 1 ] ]
-
-
-zBlock : Block
-zBlock =
-    makeBlock 5 brown [ [ 0, 1 ], [ 1, 2 ] ]
-
-
-blockGridInFieldCoords : Block -> Grid
-blockGridInFieldCoords block =
-    block.grid
-        |> List.map (\l -> List.map (Tuple.mapFirst ((+) block.x)) l)
-
-
--- Once the blocks have landed, copy their location over to the PlayField
-type alias Cell = (Int, Color)
-
-
-type alias Grid = List (List Cell)
-
-
-type alias Block =
-    { x : Int
-    , y : Int
-    , grid : Grid
-    }
-
-
-emptyGrid : Grid
-emptyGrid =
-    List.repeat playFieldSize.rows []
 
 
 type alias Model =
@@ -125,21 +46,9 @@ init : (Model, Cmd Msg)
 init =
     let
         (seed, block) = getRandomBlock <| Random.initialSeed 0
+        grid = emptyGrid playFieldSize.rows
     in
-        ( Model False False emptyGrid 0 False 0 block seed, Cmd.none )
-
-
-getRandomBlock : Random.Seed -> (Random.Seed, Block)
-getRandomBlock seed =
-    let
-        -- Todo, get initial seed from random command
-        generator = Random.int 0 <| List.length availableBlocks - 1
-        (random, newSeed) = Random.step generator seed
-    in
-        List.drop random availableBlocks
-            |> List.head
-            |> Maybe.withDefault oBlock
-            |> (,) newSeed
+        ( Model False False grid 0 False 0 block seed, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -153,6 +62,28 @@ subscriptions model =
     else
         Sub.none
 
+handleDownKey : KeyCode -> Msg
+handleDownKey code =
+    case code of
+        65 ->
+            Left
+        68 ->
+            Right
+        87 ->
+            Rotate
+        83 ->
+            Boost True
+        _ ->
+            NoOp
+
+handleUpKey : KeyCode -> Msg
+handleUpKey code =
+    case code of
+        83 ->
+            Boost False
+        _ ->
+            NoOp
+
 
 type Msg
     = Tick Time.Time
@@ -162,6 +93,11 @@ type Msg
     | Rotate
     | Boost Bool
     | NoOp -- Needed by handleKey
+
+
+clampedMoveBlock : Int -> Block -> Block
+clampedMoveBlock =
+    Block.move 0 playFieldSize.cols
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -174,10 +110,10 @@ update msg model =
             ( { model | playing = not model.playing }, Cmd.none )
 
         Left ->
-            ( { model | activeBlock = move -1 model.activeBlock }, Cmd.none )
+            ( { model | activeBlock = clampedMoveBlock -1 model.activeBlock }, Cmd.none )
 
         Right ->
-            ( { model | activeBlock = move 1 model.activeBlock }, Cmd.none )
+            ( { model | activeBlock = clampedMoveBlock 1 model.activeBlock }, Cmd.none )
 
         Rotate ->
             ( { model | activeBlock = rotate model.activeBlock }, Cmd.none )
@@ -187,53 +123,6 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
-
-
-maximumWithDefault : comparable -> List comparable -> comparable
-maximumWithDefault default =
-    Maybe.withDefault default << List.maximum
-
-
-blockWidth : Block -> Int
-blockWidth { grid } =
-    let
-        rowWidth =
-             maximumWithDefault 0 << List.map Tuple.first
-    in
-        maximumWithDefault 0 <| List.map ((+) 1) <| List.map rowWidth grid
-
-
-blockHeight : Block -> Int
-blockHeight { grid } =
-    List.length grid
-
-
-move : Int -> Block -> Block
-move dx block =
-    let
-        maxX = playFieldSize.cols - (blockWidth block)
-        newX = clamp 0 maxX <| block.x + dx
-    in
-        { block | x = newX }
-
-
-rotate : Block -> Block
-rotate block =
-    let
-        -- Needs refactoring
-        flattened = List.indexedMap (\y cellList -> List.map (\cell -> ((Tuple.first cell, y), Tuple.second cell)) cellList) (List.reverse block.grid)
-                        |> List.concat
-
-        maybeMapYToX row ((x, y), c) =
-            if row == x then
-                Just (y, c)
-            else
-                Nothing
-
-        newGrid = List.range 0 (blockWidth block - 1)
-                    |> List.map (\row -> List.filterMap (maybeMapYToX row) flattened)
-    in
-        { block | grid = newGrid }
 
 
 updateActiveBlock : Model -> Time.Time -> Model
@@ -248,14 +137,14 @@ updateActiveBlock model time =
             interval = if model.boost then 50 else 200
             nextDrop = time + interval * Time.millisecond
         in
-            if detectCollision proposedBlock model.landed then
+            if detectCollision proposedBlock.y (toGrid proposedBlock) model.landed then
                 let
                     (seed, newActive) = getRandomBlock model.seed
-                    landed = copyBlock block model.landed
-                    (removed, newLanded) = removeFullRows landed
+                    landed = Grid.copyOnto block.y (toGrid block) model.landed
+                    (removed, newLanded) = removeFullRows playFieldSize.cols landed
 
                 in
-                    if detectCollision newActive newLanded then
+                    if detectCollision newActive.y (toGrid newActive) newLanded then
                         gameOver model
                     else
                         { model
@@ -272,58 +161,6 @@ updateActiveBlock model time =
 gameOver : Model -> Model
 gameOver model =
     { model | playing = False, gameOver = True}
-
-
-padGrid : Int -> Grid -> Grid
-padGrid nr grid =
-    case nr of
-        0 ->
-            grid
-        n ->
-            padGrid (n - 1) <| [] :: grid
-
-
-removeFullRows : Grid -> (Int, Grid)
-removeFullRows grid =
-    let
-        newGrid = List.filter (\l -> List.length l /= playFieldSize.cols) grid
-        removed = (List.length grid) - (List.length newGrid)
-    in
-        (removed, padGrid removed newGrid)
-
-
-copyBlock : Block -> Grid -> Grid
-copyBlock block grid =
-    let
-        aboveRows = List.take block.y grid
-        fromBlockRows = List.drop block.y grid
-        belowRows = List.drop (blockHeight block) fromBlockRows
-
-        replacedRows = fromBlockRows
-                        |> List.take (blockHeight block)
-                        |> List.map2 List.append (blockGridInFieldCoords block)
-    in
-        List.concat [aboveRows, replacedRows, belowRows]
-
-
-detectCollision : Block -> Grid -> Bool
-detectCollision block grid =
-    let
-        stopRow =
-            List.range 0 9 |> List.map (flip (,) gray)
-
-        gridWithStop = List.append grid [stopRow]
-        findCollisionsInRows blockRow landedRow =
-            let
-                blockXs = List.map Tuple.first blockRow |> List.map ((+) block.x)
-                landedXs = List.map Tuple.first landedRow
-            in
-                List.map (flip List.member blockXs) landedXs
-                    |> List.any Basics.identity
-    in
-        List.drop block.y gridWithStop
-            |> List.map2 findCollisionsInRows block.grid
-            |> List.any Basics.identity
 
 
 renderLine : List Cell -> List Collage.Form -> List Collage.Form
@@ -399,28 +236,6 @@ view model =
             , button [ onClick TogglePlay ] [ text togglePlayStr ]
             ]
 
-
-handleDownKey : KeyCode -> Msg
-handleDownKey code =
-    case code of
-        65 ->
-            Left
-        68 ->
-            Right
-        87 ->
-            Rotate
-        83 ->
-            Boost True
-        _ ->
-            NoOp
-
-handleUpKey : KeyCode -> Msg
-handleUpKey code =
-    case code of
-        83 ->
-            Boost False
-        _ ->
-            NoOp
 
 viewPlayField : Model -> Html Msg
 viewPlayField model =
