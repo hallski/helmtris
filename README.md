@@ -1,6 +1,6 @@
 # Helmtris
 
-A one-day project to hack up a Tetris implementation in Elm to play around with elm-lang/graphics.
+Hack day project to try out elm-lang/graphics writing Tetris in Elm.
 
 ![Helmtris 0.1 Screenshot](./helmtris-0.1.png)
 
