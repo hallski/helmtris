@@ -1,7 +1,5 @@
 module Grid exposing (..)
 
-import Helpers exposing (maximumWithDefault)
-
 import Color exposing (Color, gray)
 import Collage
 import Transform
@@ -84,17 +82,23 @@ mapCells fn (Grid grid) =
     in
         Grid <| List.map mapCellsInRow grid
 
+
 height : Grid -> Int
 height (Grid grid) =
     List.length grid
 
+
 width : Grid -> Int
 width (Grid grid) =
     let
+        maximumWithDefault default =
+            Maybe.withDefault default << List.maximum
+
         rowWidth =
              maximumWithDefault 0 << List.map Tuple.first
     in
         maximumWithDefault 0 <| List.map ((+) 1) <| List.map rowWidth grid
+
 
 rotate (Grid grid) =
     let
