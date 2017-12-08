@@ -30,7 +30,7 @@ playFieldDimensions =
 type alias Score = Int
 
 
-type alias GameData =
+type alias Game =
     { grid : Grid.Grid
     , activeBlock : Block.Block
   --  , nextBlock : Block.Block
@@ -42,8 +42,8 @@ type alias GameData =
 
 type GameState
     = Initial
-    | Playing GameData
-    | Paused GameData
+    | Playing Game
+    | Paused Game
     | GameOver Score
 
 
@@ -80,17 +80,17 @@ update msg model =
         (TogglePlay, _) ->
             togglePlaying model
 
-        (Left, Playing data)->
-            { model | state = Playing <| modifyActiveBlock (Block.moveOn -1) data } ! []
+        (Left, Playing game)->
+            { model | state = Playing <| modifyActiveBlock (Block.moveOn -1) game } ! []
 
-        (Right, Playing data) ->
-            { model | state = Playing <| modifyActiveBlock (Block.moveOn 1) data } ! []
+        (Right, Playing game) ->
+            { model | state = Playing <| modifyActiveBlock (Block.moveOn 1) game } ! []
 
-        (Rotate, Playing data) ->
-            { model | state = Playing <| modifyActiveBlock Block.rotateOn data } ! []
+        (Rotate, Playing game) ->
+            { model | state = Playing <| modifyActiveBlock Block.rotateOn game } ! []
 
-        (Boost onOff, Playing data) ->
-            { model | state = Playing <| setBoost onOff data } ! []
+        (Boost onOff, Playing game) ->
+            { model | state = Playing <| setBoost onOff game } ! []
 
         (Reset, _) ->
             init
@@ -110,11 +110,11 @@ spawnNewBlock =
 newBlockSpawned : Model -> Block.Block -> Model
 newBlockSpawned model block =
     case model.state of
-        Playing data ->
-            if Block.detectCollisionInGrid block data.grid then
-                { model | state = GameOver data.score }
+        Playing game ->
+            if Block.detectCollisionInGrid block game.grid then
+                { model | state = GameOver game.score }
             else
-                { model | state = Playing { data | activeBlock = block } }
+                { model | state = Playing { game | activeBlock = block } }
 
         Initial ->
             startPlaying model block
@@ -126,11 +126,11 @@ newBlockSpawned model block =
 togglePlaying : Model -> (Model, Cmd Msg)
 togglePlaying model =
     case model.state of
-        Playing data ->
-            { model | state = Paused data } ! []
+        Playing game ->
+            { model | state = Paused game } ! []
 
-        Paused data ->
-            { model | state = Playing data } ! []
+        Paused game ->
+            { model | state = Playing game } ! []
 
         Initial ->
             model ! [ spawnNewBlock ]
@@ -142,63 +142,63 @@ togglePlaying model =
 startPlaying : Model -> Block.Block -> Model
 startPlaying model block =
     let
-        data = GameData (Grid.empty playFieldSize.cols playFieldSize.rows) block 0 0 False
+        game = Game (Grid.empty playFieldSize.cols playFieldSize.rows) block 0 0 False
     in
-        { model | state = Playing data }
+        { model | state = Playing game }
 
 
-setBoost : Bool -> GameData -> GameData
-setBoost onOff data =
-    { data | boost = onOff }
+setBoost : Bool -> Game -> Game
+setBoost onOff game =
+    { game | boost = onOff }
 
 
-modifyActiveBlock : Block.BlockManipulation -> GameData -> GameData
-modifyActiveBlock fn data =
-    case fn data.grid data.activeBlock of
+modifyActiveBlock : Block.BlockManipulation -> Game -> Game
+modifyActiveBlock fn game =
+    case fn game.grid game.activeBlock of
         Ok block ->
-            { data | activeBlock = block }
+            { game | activeBlock = block }
 
         _ ->
-            data
+            game
 
 
-copyBlockToGrid : GameData -> GameData
-copyBlockToGrid data =
-    { data | grid = Block.copyOntoGrid data.activeBlock data.grid }
+copyBlockToGrid : Game -> Game
+copyBlockToGrid game =
+    { game | grid = Block.copyOntoGrid game.activeBlock game.grid }
 
 
-removeFullRows : GameData -> GameData
-removeFullRows data =
+removeFullRows : Game -> Game
+removeFullRows game =
     let
-        (removed, grid) = Grid.removeFullRows data.grid
+        (removed, grid) = Grid.removeFullRows game.grid
     in
-        { data | grid = grid, score = data.score + 10 * removed }
+        { game | grid = grid, score = game.score + 10 * removed }
 
 
-landBlock : GameData -> GameData
-landBlock data =
-    copyBlockToGrid data
+landBlock : Game -> Game
+landBlock game =
+    copyBlockToGrid game
         |> removeFullRows
 
 
 updateActiveBlock : Time.Time -> Model -> (Model, Cmd Msg)
 updateActiveBlock time model =
     case model.state of
-        Playing data ->
-            if time < data.nextDrop then
+        Playing game ->
+            if time < game.nextDrop then
                 model ! []
             else
-                case Block.moveYOn 1 data.grid data.activeBlock of
+                case Block.moveYOn 1 game.grid game.activeBlock of
                     Ok block ->
                         let
-                            interval = if data.boost then 50 else 400
+                            interval = if game.boost then 50 else 400
                             nextDrop = time + interval * Time.millisecond
-                            newData = { data | activeBlock = block, nextDrop = nextDrop }
+                            updatedGame = { game | activeBlock = block, nextDrop = nextDrop }
                         in
-                            { model | state = Playing newData } ! []
+                            { model | state = Playing updatedGame } ! []
 
                     _ ->
-                        { model | state = Playing (landBlock data) } ! [ spawnNewBlock ]
+                        { model | state = Playing (landBlock game) } ! [ spawnNewBlock ]
 
         _ ->
             model ! []
@@ -276,18 +276,18 @@ view model =
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
-        Playing data ->
+        Playing game ->
             div [ ]
-                [ text <| "Score: " ++ (toString data.score)
-                , viewPlayField data.grid <| Just data.activeBlock
+                [ text <| "Score: " ++ (toString game.score)
+                , viewPlayField game.grid <| Just game.activeBlock
                 , button [ onClick TogglePlay ] [ text "Pause" ]
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
-        Paused data ->
+        Paused game ->
             div [ ]
-                [ text <| "Score: " ++ (toString data.score)
-                , viewPlayField data.grid <| Nothing
+                [ text <| "Score: " ++ (toString game.score)
+                , viewPlayField game.grid <| Nothing
                 , button [ onClick TogglePlay ] [ text "Play" ]
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
