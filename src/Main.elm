@@ -118,21 +118,6 @@ spawnNewBlock =
     Random.generate NextBlock Block.getRandom
 
 
-newBlockSpawned : Model -> Block.Block -> Model
-newBlockSpawned model block =
-    case model.state of
-        Playing game ->
-            if Block.detectCollisionInGrid block game.grid then
-                { model | state = GameOver game.score }
-            else
-                { model | state = Playing { game | activeBlock = block } }
-
-        Initial ->
-            startPlaying model block
-
-        _ ->
-            model
-
 
 togglePlaying : Model -> (Model, Cmd Msg)
 togglePlaying model =
@@ -156,6 +141,22 @@ startPlaying model block =
         game = Game (Grid.empty playFieldSize.cols playFieldSize.rows) block 0 defaultTimeToUpdate False
     in
         { model | state = Playing game }
+
+
+newBlockSpawned : Model -> Block.Block -> Model
+newBlockSpawned model block =
+    case model.state of
+        Playing game ->
+            if Block.detectCollisionInGrid block game.grid then
+                { model | state = GameOver game.score }
+            else
+                { model | state = Playing { game | activeBlock = block } }
+
+        Initial ->
+            startPlaying model block
+
+        _ ->
+            model
 
 
 setBoost : Bool -> Game -> Game
