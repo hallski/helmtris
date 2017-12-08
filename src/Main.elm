@@ -26,13 +26,17 @@ playFieldDimensions =
     , height = playFieldSize.rows * Grid.cellSize
     }
 
+
 type alias Score = Int
+
 
 type alias GameData =
     { grid : Grid.Grid
     , activeBlock : Block.Block
   --  , nextBlock : Block.Block
     , score : Score
+    , nextDrop : Time.Time
+    , boost : Bool
     }
 
 
@@ -45,16 +49,12 @@ type GameState
 
 type alias Model =
     { state : GameState
-    , nextDrop : Time.Time
-    , boost : Bool -- -> Block.Block || GameData
-    , seed : Random.Seed
     }
 
 
 init : (Model, Cmd Msg)
 init =
-    ( Model Initial 0 False <| Random.initialSeed 0
-    , Random.generate SetSeed (Random.int Random.minInt Random.maxInt))
+    Model Initial ! []
 
 
 -- Update
@@ -67,7 +67,7 @@ type Msg
     | Rotate
     | Boost Bool
     | Reset
-    | SetSeed Int
+    | NextBlock Block.Block
     | NoOp -- Needed by handleKey
 
 
@@ -75,10 +75,10 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Tick time ->
-            updateActiveBlock time model ! []
+            updateActiveBlock time model
 
         TogglePlay ->
-            togglePlaying model ! []
+            togglePlaying model
 
         Left ->
             modifyActiveBlock (Block.moveOn -1) model ! []
@@ -95,49 +95,67 @@ update msg model =
         Reset ->
             init
 
-        SetSeed randomInt ->
-            reseed randomInt model ! []
+        NextBlock block ->
+            newBlockSpawned model block ! []
 
         NoOp ->
             model ! []
 
 
-togglePlaying : Model -> Model
-togglePlaying model =
+spawnNewBlock : Cmd Msg
+spawnNewBlock =
+    Random.generate NextBlock Block.getRandom
+
+
+newBlockSpawned : Model -> Block.Block -> Model
+newBlockSpawned model block =
     case model.state of
         Playing data ->
-            { model | state = Paused data }
-
-        Paused data ->
-            { model | state = Playing data }
+            if Block.detectCollisionInGrid block data.grid then
+                { model | state = GameOver data.score }
+            else
+                { model | state = Playing { data | activeBlock = block } }
 
         Initial ->
-            startPlaying model
-
-        GameOver _ ->
-            startPlaying model
-
-startPlaying : Model -> Model
-startPlaying model =
-    let
-        (seed, block) = Block.getRandom model.seed
-        data = GameData (Grid.empty playFieldSize.cols playFieldSize.rows) block 0
-    in
-        { model | state = Playing data, seed = seed, nextDrop = 0 }
-
-setBoost : Bool -> Model -> Model
-setBoost onOff model =
-    { model | boost = onOff }
-
-
-reseed : Int -> Model -> Model
-reseed newSeed model =
-    case model.state of
-        Initial ->
-            { model | seed = Random.initialSeed newSeed }
+            startPlaying model block
 
         _ ->
             model
+
+
+togglePlaying : Model -> (Model, Cmd Msg)
+togglePlaying model =
+    case model.state of
+        Playing data ->
+            { model | state = Paused data } ! []
+
+        Paused data ->
+            { model | state = Playing data } ! []
+
+        Initial ->
+            model ! [ spawnNewBlock ]
+
+        GameOver _ ->
+            { model | state = Initial } ! [ spawnNewBlock ]
+
+
+startPlaying : Model -> Block.Block -> Model
+startPlaying model block =
+    let
+        data = GameData (Grid.empty playFieldSize.cols playFieldSize.rows) block 0 0 False
+    in
+        { model | state = Playing data }
+
+
+setBoost : Bool -> Model -> Model
+setBoost onOff model =
+    case model.state of
+        Playing data ->
+            { model | state = Playing { data | boost = onOff } }
+
+        _ ->
+            model
+
 
 modifyActiveBlock : Block.BlockManipulation -> Model -> Model
 modifyActiveBlock fn model =
@@ -156,54 +174,46 @@ modifyActiveBlock fn model =
             model
 
 
-updateActiveBlock : Time.Time -> Model -> Model
+copyBlockToGrid : GameData -> GameData
+copyBlockToGrid data =
+    { data | grid = Block.copyOntoGrid data.activeBlock data.grid }
+
+
+removeFullRows : GameData -> GameData
+removeFullRows data =
+    let
+        (removed, grid) = Grid.removeFullRows data.grid
+    in
+        { data | grid = grid, score = data.score + 10 * removed }
+
+
+landBlock : GameData -> GameData
+landBlock data =
+    copyBlockToGrid data
+        |> removeFullRows
+
+
+updateActiveBlock : Time.Time -> Model -> (Model, Cmd Msg)
 updateActiveBlock time model =
     case model.state of
         Playing data ->
-            if time < model.nextDrop then
-                model
+            if time < data.nextDrop then
+                model ! []
             else
-                -- Needs refactoring
-                let
-                    block = data.activeBlock
-                    proposedBlock = Block.moveYOn 1 data.grid block
-                    interval = if model.boost then 50 else 400
-                    nextDrop = time + interval * Time.millisecond
-                in
-                    case proposedBlock of
-                        Ok newBlock ->
-                            let
-                                newData = { data | activeBlock = newBlock }
-                            in
+                case Block.moveYOn 1 data.grid data.activeBlock of
+                    Ok block ->
+                        let
+                            interval = if data.boost then 50 else 400
+                            nextDrop = time + interval * Time.millisecond
+                            newData = { data | activeBlock = block, nextDrop = nextDrop }
+                        in
+                            { model | state = Playing newData } ! []
 
-                            { model | state = Playing newData, nextDrop = nextDrop }
-                        _ ->
-                            let
-                                (seed, newActive) = Block.getRandom model.seed
-                                landed = Block.copyOntoGrid block data.grid
-                                (removed, newGrid) = Grid.removeFullRows landed
-                            in
-                                if Block.detectCollisionInGrid newActive newGrid then
-                                    gameOver model data.score
-                                else
-                                    let
-                                        newData = { data
-                                                  | grid = newGrid
-                                                  , activeBlock = newActive
-                                                  , score = data.score + removed * 10
-                                                  }
-                                    in
-                                        { model
-                                        | state = Playing newData
-                                        , seed = seed
-                                        , nextDrop = nextDrop
-                                        }
+                    _ ->
+                        { model | state = Playing (landBlock data) } ! [ spawnNewBlock ]
+
         _ ->
-            model
-
-gameOver : Model -> Int -> Model
-gameOver model score =
-    { model | state = GameOver score }
+            model ! []
 
 
 -- Subscriptions
@@ -274,7 +284,7 @@ view model =
         GameOver score ->
             div [ ]
                 [ text <| "GAME OVER with score: " ++ (toString score)
-                , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) <| Nothing
+                , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) Nothing
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
@@ -297,7 +307,7 @@ view model =
         Initial ->
             div [ ]
                 [ text <| "Press Play to start playing"
-                , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) <| Nothing
+                , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) Nothing
                 , button [ onClick TogglePlay ] [ text "Play" ]
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
@@ -331,4 +341,4 @@ main =
         , view = view
         , update = update
         , subscriptions = subscriptions
-    }
+        }

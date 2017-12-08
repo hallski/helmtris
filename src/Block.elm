@@ -83,17 +83,16 @@ availableBlocks =
     ]
 
 
-getRandom : Random.Seed -> (Random.Seed, Block)
-getRandom seed =
-    let
-        -- Todo, get initial seed from random command
-        generator = Random.int 0 <| List.length availableBlocks - 1
-        (random, newSeed) = Random.step generator seed
-    in
-        List.drop random availableBlocks
-            |> List.head
-            |> Maybe.withDefault oBlock
-            |> (,) newSeed
+getBlock : Int -> Block
+getBlock nr =
+    List.drop nr availableBlocks
+        |> List.head
+        |> Maybe.withDefault oBlock
+
+
+getRandom : Random.Generator Block
+getRandom =
+    Random.map getBlock <| Random.int 0 <| List.length availableBlocks - 1
 
 
 toGrid : Block -> Grid.Grid
