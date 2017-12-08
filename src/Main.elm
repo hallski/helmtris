@@ -178,12 +178,22 @@ copyBlockToGrid game =
     { game | grid = Block.copyOntoGrid game.activeBlock game.grid }
 
 
+calculateScore : Int -> Int -> Int
+calculateScore removedLines oldScore =
+    case removedLines of
+        0 ->
+            oldScore
+
+        n ->
+            calculateScore (n - 1) (oldScore + n * 10)
+
+
 removeFullRows : Game -> Game
 removeFullRows game =
     let
         (removed, grid) = Grid.removeFullRows game.grid
     in
-        { game | grid = grid, score = game.score + 10 * removed }
+        { game | grid = grid, score = calculateScore removed game.score }
 
 
 landBlock : Game -> Game
@@ -202,12 +212,12 @@ resetTimeToNextUpdate (game, cmd) =
 updateGame : Game -> Time.Time -> (Game, Cmd Msg)
 updateGame game diff =
     let
-        t = game.timeToUpdate - diff
+        timeToUpdate = game.timeToUpdate - diff
     in
-        if t < 0 then
+        if timeToUpdate < 0 then
             resetTimeToNextUpdate <| advanceGame game
         else
-            { game | timeToUpdate = t } ! []
+            { game | timeToUpdate = timeToUpdate } ! []
 
 
 advanceGame : Game -> (Game, Cmd Msg)
