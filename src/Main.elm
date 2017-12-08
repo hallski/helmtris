@@ -73,32 +73,32 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case msg of
-        Tick time ->
+    case (msg, model.state) of
+        (Tick time, Playing _) ->
             updateActiveBlock time model
 
-        TogglePlay ->
+        (TogglePlay, _) ->
             togglePlaying model
 
-        Left ->
-            modifyActiveBlock (Block.moveOn -1) model ! []
+        (Left, Playing data)->
+            { model | state = Playing <| modifyActiveBlock (Block.moveOn -1) data } ! []
 
-        Right ->
-            modifyActiveBlock (Block.moveOn 1) model ! []
+        (Right, Playing data) ->
+            { model | state = Playing <| modifyActiveBlock (Block.moveOn 1) data } ! []
 
-        Rotate ->
-            modifyActiveBlock Block.rotateOn model ! []
+        (Rotate, Playing data) ->
+            { model | state = Playing <| modifyActiveBlock Block.rotateOn data } ! []
 
-        Boost onOff ->
-            setBoost onOff model ! []
+        (Boost onOff, Playing data) ->
+            { model | state = Playing <| setBoost onOff data } ! []
 
-        Reset ->
+        (Reset, _) ->
             init
 
-        NextBlock block ->
+        (NextBlock block, _) ->
             newBlockSpawned model block ! []
 
-        NoOp ->
+        _ ->
             model ! []
 
 
@@ -147,31 +147,19 @@ startPlaying model block =
         { model | state = Playing data }
 
 
-setBoost : Bool -> Model -> Model
-setBoost onOff model =
-    case model.state of
-        Playing data ->
-            { model | state = Playing { data | boost = onOff } }
+setBoost : Bool -> GameData -> GameData
+setBoost onOff data =
+    { data | boost = onOff }
+
+
+modifyActiveBlock : Block.BlockManipulation -> GameData -> GameData
+modifyActiveBlock fn data =
+    case fn data.grid data.activeBlock of
+        Ok block ->
+            { data | activeBlock = block }
 
         _ ->
-            model
-
-
-modifyActiveBlock : Block.BlockManipulation -> Model -> Model
-modifyActiveBlock fn model =
-    case model.state of
-        Playing data ->
-            let
-                newData = case fn data.grid data.activeBlock of
-                            Ok block ->
-                                { data | activeBlock = block }
-
-                            _ ->
-                                data
-            in
-                { model | state = Playing newData }
-        _ ->
-            model
+            data
 
 
 copyBlockToGrid : GameData -> GameData
