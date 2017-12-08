@@ -16,6 +16,14 @@ import Time
 import Transform exposing (..)
 
 
+defaultTimeToUpdate : Time.Time
+defaultTimeToUpdate = 400 * Time.millisecond
+
+
+boostedTimeToUpdate : Time.Time
+boostedTimeToUpdate = 50 * Time.millisecond
+
+
 playFieldSize : { cols : Int, rows : Int}
 playFieldSize = { cols = 10, rows = 20 }
 
@@ -35,7 +43,7 @@ type alias Game =
     , activeBlock : Block.Block
   --  , nextBlock : Block.Block
     , score : Score
-    , nextDrop : Time.Time
+    , timeToUpdate : Time.Time
     , boost : Bool
     }
 
@@ -74,8 +82,11 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case (msg, model.state) of
-        (Tick time, Playing _) ->
-            updateActiveBlock time model
+        (Tick diff, Playing game) ->
+            let
+                (updatedGame, cmd) = updateGame game diff
+            in
+                { model | state = Playing updatedGame } ! [ cmd ]
 
         (TogglePlay, _) ->
             togglePlaying model
@@ -142,7 +153,7 @@ togglePlaying model =
 startPlaying : Model -> Block.Block -> Model
 startPlaying model block =
     let
-        game = Game (Grid.empty playFieldSize.cols playFieldSize.rows) block 0 0 False
+        game = Game (Grid.empty playFieldSize.cols playFieldSize.rows) block 0 defaultTimeToUpdate False
     in
         { model | state = Playing game }
 
@@ -176,32 +187,37 @@ removeFullRows game =
 
 
 landBlock : Game -> Game
-landBlock game =
-    copyBlockToGrid game
-        |> removeFullRows
+landBlock =
+    removeFullRows << copyBlockToGrid
 
 
-updateActiveBlock : Time.Time -> Model -> (Model, Cmd Msg)
-updateActiveBlock time model =
-    case model.state of
-        Playing game ->
-            if time < game.nextDrop then
-                model ! []
-            else
-                case Block.moveYOn 1 game.grid game.activeBlock of
-                    Ok block ->
-                        let
-                            interval = if game.boost then 50 else 400
-                            nextDrop = time + interval * Time.millisecond
-                            updatedGame = { game | activeBlock = block, nextDrop = nextDrop }
-                        in
-                            { model | state = Playing updatedGame } ! []
+resetTimeToNextUpdate : (Game, Cmd Msg) -> (Game, Cmd Msg)
+resetTimeToNextUpdate (game, cmd) =
+    let
+        timeToUpdate = if game.boost then boostedTimeToUpdate else defaultTimeToUpdate
+    in
+        ( { game | timeToUpdate = timeToUpdate }, cmd )
 
-                    _ ->
-                        { model | state = Playing (landBlock game) } ! [ spawnNewBlock ]
+
+updateGame : Game -> Time.Time -> (Game, Cmd Msg)
+updateGame game diff =
+    let
+        t = game.timeToUpdate - diff
+    in
+        if t < 0 then
+            resetTimeToNextUpdate <| iterateGame game
+        else
+            { game | timeToUpdate = t } ! []
+
+
+iterateGame : Game -> (Game, Cmd Msg)
+iterateGame game =
+    case Block.moveYOn 1 game.grid game.activeBlock of
+        Ok block ->
+            { game | activeBlock = block } ! []
 
         _ ->
-            model ! []
+            landBlock game ! [ spawnNewBlock ]
 
 
 -- Subscriptions
@@ -211,7 +227,7 @@ subscriptions model =
     case model.state of
         Playing _ ->
             Sub.batch
-                [ AF.times Tick
+                [ AF.diffs Tick
                 , KB.downs handleDownKey
                 , KB.ups handleUpKey
                 ]
