@@ -75,45 +75,31 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Tick time ->
-            model
-                |> updateActiveBlock time
-                |> noCmd
+            updateActiveBlock time model ! []
 
         TogglePlay ->
-            model
-                |> togglePlaying
-                |> noCmd
+            togglePlaying model ! []
 
         Left ->
-            model
-                |> modifyActiveBlock (Block.moveOn -1)
-                |> noCmd
+            modifyActiveBlock (Block.moveOn -1) model ! []
 
         Right ->
-            model
-                |> modifyActiveBlock (Block.moveOn 1)
-                |> noCmd
+            modifyActiveBlock (Block.moveOn 1) model ! []
 
         Rotate ->
-            model
-                |> modifyActiveBlock Block.rotateOn
-                |> noCmd
+            modifyActiveBlock Block.rotateOn model ! []
 
         Boost onOff ->
-            model
-                |> setBoost onOff
-                |> noCmd
+            setBoost onOff model ! []
 
         Reset ->
             init
 
         SetSeed randomInt ->
-            model
-                |> reseed randomInt
-                |> noCmd
+            reseed randomInt model ! []
 
         NoOp ->
-            model |> noCmd
+            model ! []
 
 
 togglePlaying : Model -> Model
@@ -152,12 +138,6 @@ reseed newSeed model =
 
         _ ->
             model
-
-
-noCmd : Model -> (Model, Cmd Msg)
-noCmd model =
-    ( model, Cmd.none )
-
 
 modifyActiveBlock : Block.BlockManipulation -> Model -> Model
 modifyActiveBlock fn model =
