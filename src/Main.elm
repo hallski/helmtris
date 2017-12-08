@@ -205,13 +205,13 @@ updateGame game diff =
         t = game.timeToUpdate - diff
     in
         if t < 0 then
-            resetTimeToNextUpdate <| iterateGame game
+            resetTimeToNextUpdate <| advanceGame game
         else
             { game | timeToUpdate = t } ! []
 
 
-iterateGame : Game -> (Game, Cmd Msg)
-iterateGame game =
+advanceGame : Game -> (Game, Cmd Msg)
+advanceGame game =
     case Block.moveYOn 1 game.grid game.activeBlock of
         Ok block ->
             { game | activeBlock = block } ! []
