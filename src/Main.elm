@@ -26,27 +26,35 @@ playFieldDimensions =
     , height = playFieldSize.rows * Grid.cellSize
     }
 
+type alias Score = Int
+
+type alias GameData =
+    { grid : Grid.Grid
+    , activeBlock : Block.Block
+  --  , nextBlock : Block.Block
+    , score : Score
+    }
+
+
+type GameState
+    = Initial
+    | Playing GameData
+    | Paused GameData
+    | GameOver Score
+
 
 type alias Model =
-    { playing : Bool
-    , gameOver : Bool
-    , landed : Grid.Grid
+    { state : GameState
     , nextDrop : Time.Time
-    , boost : Bool
-    , score : Int
-    , activeBlock : Block.Block
+    , boost : Bool -- -> Block.Block || GameData
     , seed : Random.Seed
     }
 
 
 init : (Model, Cmd Msg)
 init =
-    let
-        (seed, block) = Block.getRandom <| Random.initialSeed 0
-        grid = Grid.empty playFieldSize.cols playFieldSize.rows
-    in
-        ( Model False False grid 0 False 0 block seed
-        , Random.generate SetSeed (Random.int Random.minInt Random.maxInt))
+    ( Model Initial 0 False <| Random.initialSeed 0
+    , Random.generate SetSeed (Random.int Random.minInt Random.maxInt))
 
 
 -- Update
@@ -110,8 +118,26 @@ update msg model =
 
 togglePlaying : Model -> Model
 togglePlaying model =
-    { model | playing = not model.playing }
+    case model.state of
+        Playing data ->
+            { model | state = Paused data }
 
+        Paused data ->
+            { model | state = Playing data }
+
+        Initial ->
+            startPlaying model
+
+        GameOver _ ->
+            startPlaying model
+
+startPlaying : Model -> Model
+startPlaying model =
+    let
+        (seed, block) = Block.getRandom model.seed
+        data = GameData (Grid.empty playFieldSize.cols playFieldSize.rows) block 0
+    in
+        { model | state = Playing data, seed = seed, nextDrop = 0 }
 
 setBoost : Bool -> Model -> Model
 setBoost onOff model =
@@ -120,13 +146,12 @@ setBoost onOff model =
 
 reseed : Int -> Model -> Model
 reseed newSeed model =
-    if model.playing then
-        model -- Ignore new seed if game is already started
-    else
-        let
-            (seed, newActive) = Block.getRandom <| Random.initialSeed newSeed
-        in
-            { model | seed = seed, activeBlock = newActive }
+    case model.state of
+        Initial ->
+            { model | seed = Random.initialSeed newSeed }
+
+        _ ->
+            model
 
 
 noCmd : Model -> (Model, Cmd Msg)
@@ -136,63 +161,85 @@ noCmd model =
 
 modifyActiveBlock : Block.BlockManipulation -> Model -> Model
 modifyActiveBlock fn model =
-    case fn model.landed model.activeBlock of
-        Ok block ->
-            { model | activeBlock = block }
-        Err msg ->
+    case model.state of
+        Playing data ->
+            let
+                newData = case fn data.grid data.activeBlock of
+                            Ok block ->
+                                { data | activeBlock = block }
+
+                            _ ->
+                                data
+            in
+                { model | state = Playing newData }
+        _ ->
             model
 
 
 updateActiveBlock : Time.Time -> Model -> Model
 updateActiveBlock time model =
-    if time < model.nextDrop then
-        model
-    else
-        -- Needs refactoring
-        let
-            block = model.activeBlock
-            proposedBlock = Block.moveYOn 1 model.landed block
-            interval = if model.boost then 50 else 400
-            nextDrop = time + interval * Time.millisecond
-        in
-            case proposedBlock of
-                Ok newBlock ->
-                    { model | activeBlock = newBlock, nextDrop = nextDrop }
-                _ ->
-                    let
-                        (seed, newActive) = Block.getRandom model.seed
-                        landed = Block.copyOntoGrid block model.landed
-                        (removed, newLanded) = Grid.removeFullRows landed
-                    in
-                        if Block.detectCollisionInGrid newActive newLanded then
-                            gameOver model
-                        else
-                            { model
-                            | landed = newLanded
-                            , activeBlock = newActive
-                            , nextDrop = nextDrop
-                            , seed = seed
-                            , score = model.score + removed * 10
-                            }
+    case model.state of
+        Playing data ->
+            if time < model.nextDrop then
+                model
+            else
+                -- Needs refactoring
+                let
+                    block = data.activeBlock
+                    proposedBlock = Block.moveYOn 1 data.grid block
+                    interval = if model.boost then 50 else 400
+                    nextDrop = time + interval * Time.millisecond
+                in
+                    case proposedBlock of
+                        Ok newBlock ->
+                            let
+                                newData = { data | activeBlock = newBlock }
+                            in
 
+                            { model | state = Playing newData, nextDrop = nextDrop }
+                        _ ->
+                            let
+                                (seed, newActive) = Block.getRandom model.seed
+                                landed = Block.copyOntoGrid block data.grid
+                                (removed, newGrid) = Grid.removeFullRows landed
+                            in
+                                if Block.detectCollisionInGrid newActive newGrid then
+                                    gameOver model data.score
+                                else
+                                    let
+                                        newData = { data
+                                                  | grid = newGrid
+                                                  , activeBlock = newActive
+                                                  , score = data.score + removed * 10
+                                                  }
+                                    in
+                                        { model
+                                        | state = Playing newData
+                                        , seed = seed
+                                        , nextDrop = nextDrop
+                                        }
+        _ ->
+            model
 
-gameOver : Model -> Model
-gameOver model =
-    { model | playing = False, gameOver = True}
+gameOver : Model -> Int -> Model
+gameOver model score =
+    { model | state = GameOver score }
 
 
 -- Subscriptions
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.playing then
-        Sub.batch
-            [ AF.times Tick
-            , KB.downs handleDownKey
-            , KB.ups handleUpKey
-            ]
-    else
-        Sub.none
+    case model.state of
+        Playing _ ->
+            Sub.batch
+                [ AF.times Tick
+                , KB.downs handleDownKey
+                , KB.ups handleUpKey
+                ]
+
+        _ ->
+            Sub.none
 
 handleDownKey : KeyCode -> Msg
 handleDownKey code =
@@ -243,27 +290,50 @@ canvasTranslation =
 
 view : Model -> Html Msg
 view model =
-    let
-        togglePlayStr = if model.playing then "Pause" else "Start"
-        str = if model.gameOver then "GAME OVER with score: " else "Score: "
-    in
-        div [ ]
-            [ text <| str ++ (toString model.score)
-            , viewPlayField model
-            , button [ onClick TogglePlay ] [ text togglePlayStr ]
-            , button [ onClick Reset ] [ text "Reset" ]
-            ]
+    case model.state of
+        GameOver score ->
+            div [ ]
+                [ text <| "GAME OVER with score: " ++ (toString score)
+                , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) <| Nothing
+                , button [ onClick Reset ] [ text "Reset" ]
+                ]
+
+        Playing data ->
+            div [ ]
+                [ text <| "Score: " ++ (toString data.score)
+                , viewPlayField data.grid <| Just data.activeBlock
+                , button [ onClick TogglePlay ] [ text "Pause" ]
+                , button [ onClick Reset ] [ text "Reset" ]
+                ]
+
+        Paused data ->
+            div [ ]
+                [ text <| "Score: " ++ (toString data.score)
+                , viewPlayField data.grid <| Nothing
+                , button [ onClick TogglePlay ] [ text "Play" ]
+                , button [ onClick Reset ] [ text "Reset" ]
+                ]
+
+        Initial ->
+            div [ ]
+                [ text <| "Press Play to start playing"
+                , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) <| Nothing
+                , button [ onClick TogglePlay ] [ text "Play" ]
+                , button [ onClick Reset ] [ text "Reset" ]
+                ]
 
 
-viewPlayField : Model -> Html Msg
-viewPlayField model =
+viewPlayField : Grid.Grid -> Maybe Block.Block -> Html Msg
+viewPlayField grid maybeBlock =
     let
-        forms = if model.playing then
-                    [ Grid.render 0 0 model.landed
-                    , Block.render model.activeBlock
-                    ]
-                else
-                    [ Grid.render 0 0 model.landed ]
+        forms = case maybeBlock of
+            Just block ->
+                [ Grid.render 0 0 grid
+                , Block.render block
+                ]
+
+            Nothing ->
+                [ Grid.render 0 0 grid ]
 
     in
         Collage.collage playFieldDimensions.width playFieldDimensions.height
