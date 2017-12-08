@@ -12523,50 +12523,44 @@ var _user$project$Block$availableBlocks = {
 		}
 	}
 };
-var _user$project$Block$getRandom = function (seed) {
-	var generator = A2(
+var _user$project$Block$getBlock = function (nr) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		_user$project$Block$oBlock,
+		_elm_lang$core$List$head(
+			A2(_elm_lang$core$List$drop, nr, _user$project$Block$availableBlocks)));
+};
+var _user$project$Block$getRandom = A2(
+	_elm_lang$core$Random$map,
+	_user$project$Block$getBlock,
+	A2(
 		_elm_lang$core$Random$int,
 		0,
-		_elm_lang$core$List$length(_user$project$Block$availableBlocks) - 1);
-	var _p6 = A2(_elm_lang$core$Random$step, generator, seed);
-	var random = _p6._0;
-	var newSeed = _p6._1;
-	return A2(
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		newSeed,
-		A2(
-			_elm_lang$core$Maybe$withDefault,
-			_user$project$Block$oBlock,
-			_elm_lang$core$List$head(
-				A2(_elm_lang$core$List$drop, random, _user$project$Block$availableBlocks))));
-};
-var _user$project$Block$boardPositiveX = function (_p7) {
-	var _p8 = _p7;
-	var _p9 = _p8._0;
-	return (_elm_lang$core$Native_Utils.cmp(_p9.x, 0) > -1) ? _elm_lang$core$Result$Ok(
-		_user$project$Block$Block(_p9)) : _elm_lang$core$Result$Err('Board X is negative');
+		_elm_lang$core$List$length(_user$project$Block$availableBlocks) - 1));
+var _user$project$Block$boardPositiveX = function (_p6) {
+	var _p7 = _p6;
+	var _p8 = _p7._0;
+	return (_elm_lang$core$Native_Utils.cmp(_p8.x, 0) > -1) ? _elm_lang$core$Result$Ok(
+		_user$project$Block$Block(_p8)) : _elm_lang$core$Result$Err('Board X is negative');
 };
 var _user$project$Block$boardWithinGridWidth = F2(
-	function (grid, _p10) {
-		var _p11 = _p10;
-		var _p12 = _p11._0;
+	function (grid, _p9) {
+		var _p10 = _p9;
+		var _p11 = _p10._0;
 		return (_elm_lang$core$Native_Utils.cmp(
-			_p12.x + _user$project$Grid$width(_p12.grid),
+			_p11.x + _user$project$Grid$width(_p11.grid),
 			_user$project$Grid$width(grid)) < 1) ? _elm_lang$core$Result$Ok(
-			_user$project$Block$Block(_p12)) : _elm_lang$core$Result$Err('Block trailed off the grid');
+			_user$project$Block$Block(_p11)) : _elm_lang$core$Result$Err('Block trailed off the grid');
 	});
 var _user$project$Block$detectCollisionInGrid = F2(
-	function (_p13, grid) {
-		var _p14 = _p13;
-		var _p15 = _p14._0;
+	function (_p12, grid) {
+		var _p13 = _p12;
+		var _p14 = _p13._0;
 		return A3(
 			_user$project$Grid$detectCollision,
-			_p15.y,
+			_p14.y,
 			_user$project$Block$toGrid(
-				_user$project$Block$Block(_p15)),
+				_user$project$Block$Block(_p14)),
 			grid);
 	});
 var _user$project$Block$withoutCollision = F2(
@@ -12584,102 +12578,110 @@ var _user$project$Block$validateOnGrid = F2(
 				_user$project$Block$boardPositiveX(block)));
 	});
 var _user$project$Block$moveOn = F3(
-	function (dx, grid, _p16) {
-		var _p17 = _p16;
-		var _p18 = _p17._0;
+	function (dx, grid, _p15) {
+		var _p16 = _p15;
+		var _p17 = _p16._0;
 		return A2(
 			_user$project$Block$validateOnGrid,
 			grid,
 			_user$project$Block$Block(
 				_elm_lang$core$Native_Utils.update(
-					_p18,
-					{x: _p18.x + dx})));
+					_p17,
+					{x: _p17.x + dx})));
 	});
 var _user$project$Block$moveYOn = F3(
-	function (dy, grid, _p19) {
-		var _p20 = _p19;
-		var _p21 = _p20._0;
+	function (dy, grid, _p18) {
+		var _p19 = _p18;
+		var _p20 = _p19._0;
 		return A2(
 			_user$project$Block$validateOnGrid,
 			grid,
 			_user$project$Block$Block(
 				_elm_lang$core$Native_Utils.update(
-					_p21,
-					{y: _p21.y + dy})));
+					_p20,
+					{y: _p20.y + dy})));
 	});
 var _user$project$Block$rotateOn = F2(
-	function (grid, _p22) {
-		var _p23 = _p22;
-		var _p24 = _p23._0;
+	function (grid, _p21) {
+		var _p22 = _p21;
+		var _p23 = _p22._0;
 		return A2(
 			_user$project$Block$validateOnGrid,
 			grid,
 			_user$project$Block$Block(
 				_elm_lang$core$Native_Utils.update(
-					_p24,
+					_p23,
 					{
-						grid: _user$project$Grid$rotate(_p24.grid)
+						grid: _user$project$Grid$rotate(_p23.grid)
 					})));
 	});
 var _user$project$Block$copyOntoGrid = F2(
-	function (_p25, grid) {
-		var _p26 = _p25;
-		var _p27 = _p26._0;
+	function (_p24, grid) {
+		var _p25 = _p24;
+		var _p26 = _p25._0;
 		return A3(
 			_user$project$Grid$copyOnto,
-			_p27.y,
+			_p26.y,
 			_user$project$Block$toGrid(
-				_user$project$Block$Block(_p27)),
+				_user$project$Block$Block(_p26)),
 			grid);
 	});
 
-var _user$project$Main$gameOver = function (model) {
-	return _elm_lang$core$Native_Utils.update(
-		model,
-		{playing: false, gameOver: true});
-};
-var _user$project$Main$updateActiveBlock = F2(
-	function (model, time) {
-		if (_elm_lang$core$Native_Utils.cmp(time, model.nextDrop) < 0) {
-			return model;
-		} else {
-			var interval = model.boost ? 50 : 400;
-			var nextDrop = time + (interval * _elm_lang$core$Time$millisecond);
-			var block = model.activeBlock;
-			var proposedBlock = A3(_user$project$Block$moveYOn, 1, model.landed, block);
-			var _p0 = proposedBlock;
-			if (_p0.ctor === 'Ok') {
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{activeBlock: _p0._0, nextDrop: nextDrop});
+var _user$project$Main$calculateScore = F2(
+	function (removedLines, oldScore) {
+		calculateScore:
+		while (true) {
+			var _p0 = removedLines;
+			if (_p0 === 0) {
+				return oldScore;
 			} else {
-				var landed = A2(_user$project$Block$copyOntoGrid, block, model.landed);
-				var _p1 = _user$project$Grid$removeFullRows(landed);
-				var removed = _p1._0;
-				var newLanded = _p1._1;
-				var _p2 = _user$project$Block$getRandom(model.seed);
-				var seed = _p2._0;
-				var newActive = _p2._1;
-				return A2(_user$project$Block$detectCollisionInGrid, newActive, newLanded) ? _user$project$Main$gameOver(model) : _elm_lang$core$Native_Utils.update(
-					model,
-					{landed: newLanded, activeBlock: newActive, nextDrop: nextDrop, seed: seed, score: model.score + (removed * 10)});
+				var _p1 = _p0;
+				var _v1 = _p1 - 1,
+					_v2 = oldScore + (_p1 * 10);
+				removedLines = _v1;
+				oldScore = _v2;
+				continue calculateScore;
 			}
 		}
 	});
+var _user$project$Main$removeFullRows = function (game) {
+	var _p2 = _user$project$Grid$removeFullRows(game.grid);
+	var removed = _p2._0;
+	var grid = _p2._1;
+	return _elm_lang$core$Native_Utils.update(
+		game,
+		{
+			grid: grid,
+			score: A2(_user$project$Main$calculateScore, removed, game.score)
+		});
+};
+var _user$project$Main$copyBlockToGrid = function (game) {
+	return _elm_lang$core$Native_Utils.update(
+		game,
+		{
+			grid: A2(_user$project$Block$copyOntoGrid, game.activeBlock, game.grid)
+		});
+};
+var _user$project$Main$landBlock = function (_p3) {
+	return _user$project$Main$removeFullRows(
+		_user$project$Main$copyBlockToGrid(_p3));
+};
 var _user$project$Main$modifyActiveBlock = F2(
-	function (model, fn) {
-		var _p3 = A2(fn, model.landed, model.activeBlock);
-		if (_p3.ctor === 'Ok') {
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{activeBlock: _p3._0}),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
+	function (fn, game) {
+		var _p4 = A2(fn, game.grid, game.activeBlock);
+		if (_p4.ctor === 'Ok') {
+			return _elm_lang$core$Native_Utils.update(
+				game,
+				{activeBlock: _p4._0});
 		} else {
-			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			return game;
 		}
+	});
+var _user$project$Main$setBoost = F2(
+	function (onOff, game) {
+		return _elm_lang$core$Native_Utils.update(
+			game,
+			{boost: onOff});
 	});
 var _user$project$Main$playFieldSize = {cols: 10, rows: 20};
 var _user$project$Main$playFieldDimensions = {width: _user$project$Main$playFieldSize.cols * _user$project$Grid$cellSize, height: _user$project$Main$playFieldSize.rows * _user$project$Grid$cellSize};
@@ -12691,124 +12693,312 @@ var _user$project$Main$canvasTranslation = function () {
 		_evancz$elm_graphics$Transform$scaleY(-1),
 		A2(_evancz$elm_graphics$Transform$translation, startX, startY));
 }();
-var _user$project$Main$viewPlayField = function (model) {
-	var forms = model.playing ? {
-		ctor: '::',
-		_0: A3(_user$project$Grid$render, 0, 0, model.landed),
-		_1: {
-			ctor: '::',
-			_0: _user$project$Block$render(model.activeBlock),
-			_1: {ctor: '[]'}
-		}
-	} : {
-		ctor: '::',
-		_0: A3(_user$project$Grid$render, 0, 0, model.landed),
-		_1: {ctor: '[]'}
-	};
-	return _evancz$elm_graphics$Element$toHtml(
-		A2(
-			_evancz$elm_graphics$Element$color,
-			_elm_lang$core$Color$gray,
-			A3(
-				_evancz$elm_graphics$Collage$collage,
-				_user$project$Main$playFieldDimensions.width,
-				_user$project$Main$playFieldDimensions.height,
-				{
+var _user$project$Main$viewPlayField = F2(
+	function (grid, maybeBlock) {
+		var forms = function () {
+			var _p5 = maybeBlock;
+			if (_p5.ctor === 'Just') {
+				return {
 					ctor: '::',
-					_0: A2(_evancz$elm_graphics$Collage$groupTransform, _user$project$Main$canvasTranslation, forms),
+					_0: A3(_user$project$Grid$render, 0, 0, grid),
+					_1: {
+						ctor: '::',
+						_0: _user$project$Block$render(_p5._0),
+						_1: {ctor: '[]'}
+					}
+				};
+			} else {
+				return {
+					ctor: '::',
+					_0: A3(_user$project$Grid$render, 0, 0, grid),
 					_1: {ctor: '[]'}
-				})));
-};
-var _user$project$Main$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {playing: a, gameOver: b, landed: c, nextDrop: d, boost: e, score: f, activeBlock: g, seed: h};
+				};
+			}
+		}();
+		return _evancz$elm_graphics$Element$toHtml(
+			A2(
+				_evancz$elm_graphics$Element$color,
+				_elm_lang$core$Color$gray,
+				A3(
+					_evancz$elm_graphics$Collage$collage,
+					_user$project$Main$playFieldDimensions.width,
+					_user$project$Main$playFieldDimensions.height,
+					{
+						ctor: '::',
+						_0: A2(_evancz$elm_graphics$Collage$groupTransform, _user$project$Main$canvasTranslation, forms),
+						_1: {ctor: '[]'}
+					})));
 	});
-var _user$project$Main$NoOp = {ctor: 'NoOp'};
-var _user$project$Main$SetSeed = function (a) {
-	return {ctor: 'SetSeed', _0: a};
-};
-var _user$project$Main$init = function () {
-	var grid = A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows);
-	var _p4 = _user$project$Block$getRandom(
-		_elm_lang$core$Random$initialSeed(0));
-	var seed = _p4._0;
-	var block = _p4._1;
+var _user$project$Main$boostedTimeToUpdate = 50 * _elm_lang$core$Time$millisecond;
+var _user$project$Main$defaultTimeToUpdate = 400 * _elm_lang$core$Time$millisecond;
+var _user$project$Main$resetTimeToNextUpdate = function (_p6) {
+	var _p7 = _p6;
+	var _p8 = _p7._0;
+	var timeToUpdate = _p8.boost ? _user$project$Main$boostedTimeToUpdate : _user$project$Main$defaultTimeToUpdate;
 	return {
 		ctor: '_Tuple2',
-		_0: A8(_user$project$Main$Model, false, false, grid, 0, false, 0, block, seed),
-		_1: A2(
-			_elm_lang$core$Random$generate,
-			_user$project$Main$SetSeed,
-			A2(_elm_lang$core$Random$int, _elm_lang$core$Random$minInt, _elm_lang$core$Random$maxInt))
+		_0: _elm_lang$core$Native_Utils.update(
+			_p8,
+			{timeToUpdate: timeToUpdate}),
+		_1: _p7._1
 	};
-}();
+};
+var _user$project$Main$Game = F5(
+	function (a, b, c, d, e) {
+		return {grid: a, activeBlock: b, score: c, timeToUpdate: d, boost: e};
+	});
+var _user$project$Main$Model = function (a) {
+	return {state: a};
+};
+var _user$project$Main$GameOver = function (a) {
+	return {ctor: 'GameOver', _0: a};
+};
+var _user$project$Main$Paused = function (a) {
+	return {ctor: 'Paused', _0: a};
+};
+var _user$project$Main$Playing = function (a) {
+	return {ctor: 'Playing', _0: a};
+};
+var _user$project$Main$startPlaying = F2(
+	function (model, block) {
+		var game = A5(
+			_user$project$Main$Game,
+			A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows),
+			block,
+			0,
+			_user$project$Main$defaultTimeToUpdate,
+			false);
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				state: _user$project$Main$Playing(game)
+			});
+	});
+var _user$project$Main$newBlockSpawned = F2(
+	function (model, block) {
+		var _p9 = model.state;
+		switch (_p9.ctor) {
+			case 'Playing':
+				var _p10 = _p9._0;
+				return A2(_user$project$Block$detectCollisionInGrid, block, _p10.grid) ? _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						state: _user$project$Main$GameOver(_p10.score)
+					}) : _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						state: _user$project$Main$Playing(
+							_elm_lang$core$Native_Utils.update(
+								_p10,
+								{activeBlock: block}))
+					});
+			case 'Initial':
+				return A2(_user$project$Main$startPlaying, model, block);
+			default:
+				return model;
+		}
+	});
+var _user$project$Main$Initial = {ctor: 'Initial'};
+var _user$project$Main$init = A2(
+	_elm_lang$core$Platform_Cmd_ops['!'],
+	_user$project$Main$Model(_user$project$Main$Initial),
+	{ctor: '[]'});
+var _user$project$Main$NoOp = {ctor: 'NoOp'};
+var _user$project$Main$NextBlock = function (a) {
+	return {ctor: 'NextBlock', _0: a};
+};
+var _user$project$Main$spawnNewBlock = A2(_elm_lang$core$Random$generate, _user$project$Main$NextBlock, _user$project$Block$getRandom);
+var _user$project$Main$togglePlaying = function (model) {
+	var _p11 = model.state;
+	switch (_p11.ctor) {
+		case 'Playing':
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{
+						state: _user$project$Main$Paused(_p11._0)
+					}),
+				{ctor: '[]'});
+		case 'Paused':
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{
+						state: _user$project$Main$Playing(_p11._0)
+					}),
+				{ctor: '[]'});
+		case 'Initial':
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				model,
+				{
+					ctor: '::',
+					_0: _user$project$Main$spawnNewBlock,
+					_1: {ctor: '[]'}
+				});
+		default:
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{state: _user$project$Main$Initial}),
+				{
+					ctor: '::',
+					_0: _user$project$Main$spawnNewBlock,
+					_1: {ctor: '[]'}
+				});
+	}
+};
+var _user$project$Main$advanceGame = function (game) {
+	var _p12 = A3(_user$project$Block$moveYOn, 1, game.grid, game.activeBlock);
+	if (_p12.ctor === 'Ok') {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_elm_lang$core$Native_Utils.update(
+				game,
+				{activeBlock: _p12._0}),
+			{ctor: '[]'});
+	} else {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_user$project$Main$landBlock(game),
+			{
+				ctor: '::',
+				_0: _user$project$Main$spawnNewBlock,
+				_1: {ctor: '[]'}
+			});
+	}
+};
+var _user$project$Main$updateGame = F2(
+	function (game, diff) {
+		var timeToUpdate = game.timeToUpdate - diff;
+		return (_elm_lang$core$Native_Utils.cmp(timeToUpdate, 0) < 0) ? _user$project$Main$resetTimeToNextUpdate(
+			_user$project$Main$advanceGame(game)) : A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_elm_lang$core$Native_Utils.update(
+				game,
+				{timeToUpdate: timeToUpdate}),
+			{ctor: '[]'});
+	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p5 = msg;
-		switch (_p5.ctor) {
-			case 'Tick':
-				return {
-					ctor: '_Tuple2',
-					_0: A2(_user$project$Main$updateActiveBlock, model, _p5._0),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'TogglePlay':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{playing: !model.playing}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'Left':
-				return A2(
-					_user$project$Main$modifyActiveBlock,
-					model,
-					_user$project$Block$moveOn(-1));
-			case 'Right':
-				return A2(
-					_user$project$Main$modifyActiveBlock,
-					model,
-					_user$project$Block$moveOn(1));
-			case 'Rotate':
-				return A2(_user$project$Main$modifyActiveBlock, model, _user$project$Block$rotateOn);
-			case 'Boost':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{boost: _p5._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'Reset':
-				return _user$project$Main$init;
-			case 'SetSeed':
-				if (model.playing) {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				} else {
-					var _p6 = _user$project$Block$getRandom(
-						_elm_lang$core$Random$initialSeed(_p5._0));
-					var seed = _p6._0;
-					var newActive = _p6._1;
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{seed: seed, activeBlock: newActive}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
+		var _p13 = {ctor: '_Tuple2', _0: msg, _1: model.state};
+		_v9_8:
+		do {
+			if (_p13.ctor === '_Tuple2') {
+				switch (_p13._0.ctor) {
+					case 'Tick':
+						if (_p13._1.ctor === 'Playing') {
+							var _p14 = A2(_user$project$Main$updateGame, _p13._1._0, _p13._0._0);
+							var updatedGame = _p14._0;
+							var cmd = _p14._1;
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										state: _user$project$Main$Playing(updatedGame)
+									}),
+								{
+									ctor: '::',
+									_0: cmd,
+									_1: {ctor: '[]'}
+								});
+						} else {
+							break _v9_8;
+						}
+					case 'TogglePlay':
+						return _user$project$Main$togglePlaying(model);
+					case 'Left':
+						if (_p13._1.ctor === 'Playing') {
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										state: _user$project$Main$Playing(
+											A2(
+												_user$project$Main$modifyActiveBlock,
+												_user$project$Block$moveOn(-1),
+												_p13._1._0))
+									}),
+								{ctor: '[]'});
+						} else {
+							break _v9_8;
+						}
+					case 'Right':
+						if (_p13._1.ctor === 'Playing') {
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										state: _user$project$Main$Playing(
+											A2(
+												_user$project$Main$modifyActiveBlock,
+												_user$project$Block$moveOn(1),
+												_p13._1._0))
+									}),
+								{ctor: '[]'});
+						} else {
+							break _v9_8;
+						}
+					case 'Rotate':
+						if (_p13._1.ctor === 'Playing') {
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										state: _user$project$Main$Playing(
+											A2(_user$project$Main$modifyActiveBlock, _user$project$Block$rotateOn, _p13._1._0))
+									}),
+								{ctor: '[]'});
+						} else {
+							break _v9_8;
+						}
+					case 'Boost':
+						if (_p13._1.ctor === 'Playing') {
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										state: _user$project$Main$Playing(
+											A2(_user$project$Main$setBoost, _p13._0._0, _p13._1._0))
+									}),
+								{ctor: '[]'});
+						} else {
+							break _v9_8;
+						}
+					case 'Reset':
+						return _user$project$Main$init;
+					case 'NextBlock':
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							A2(_user$project$Main$newBlockSpawned, model, _p13._0._0),
+							{ctor: '[]'});
+					default:
+						break _v9_8;
 				}
-			default:
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-		}
+			} else {
+				break _v9_8;
+			}
+		} while(false);
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			model,
+			{ctor: '[]'});
 	});
 var _user$project$Main$Reset = {ctor: 'Reset'};
 var _user$project$Main$Boost = function (a) {
 	return {ctor: 'Boost', _0: a};
 };
 var _user$project$Main$handleUpKey = function (code) {
-	var _p7 = code;
-	switch (_p7) {
+	var _p15 = code;
+	switch (_p15) {
 		case 83:
 			return _user$project$Main$Boost(false);
 		case 40:
@@ -12821,8 +13011,8 @@ var _user$project$Main$Rotate = {ctor: 'Rotate'};
 var _user$project$Main$Right = {ctor: 'Right'};
 var _user$project$Main$Left = {ctor: 'Left'};
 var _user$project$Main$handleDownKey = function (code) {
-	var _p8 = code;
-	switch (_p8) {
+	var _p16 = code;
+	switch (_p16) {
 		case 65:
 			return _user$project$Main$Left;
 		case 68:
@@ -12845,73 +13035,213 @@ var _user$project$Main$handleDownKey = function (code) {
 };
 var _user$project$Main$TogglePlay = {ctor: 'TogglePlay'};
 var _user$project$Main$view = function (model) {
-	var str = model.gameOver ? 'GAME OVER with score: ' : 'Score: ';
-	var togglePlayStr = model.playing ? 'Pause' : 'Start';
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text(
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					str,
-					_elm_lang$core$Basics$toString(model.score))),
-			_1: {
-				ctor: '::',
-				_0: _user$project$Main$viewPlayField(model),
-				_1: {
+	var _p17 = model.state;
+	switch (_p17.ctor) {
+		case 'GameOver':
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$button,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$TogglePlay),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(togglePlayStr),
-							_1: {ctor: '[]'}
-						}),
+					_0: _elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'GAME OVER with score: ',
+							_elm_lang$core$Basics$toString(_p17._0))),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$button,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Reset),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Reset'),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
+							_user$project$Main$viewPlayField,
+							A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows),
+							_elm_lang$core$Maybe$Nothing),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Reset),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Reset'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
 					}
-				}
-			}
-		});
+				});
+		case 'Playing':
+			var _p18 = _p17._0;
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'Score: ',
+							_elm_lang$core$Basics$toString(_p18.score))),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_user$project$Main$viewPlayField,
+							_p18.grid,
+							_elm_lang$core$Maybe$Just(_p18.activeBlock)),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$TogglePlay),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Pause'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Reset),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Reset'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				});
+		case 'Paused':
+			var _p19 = _p17._0;
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'Score: ',
+							_elm_lang$core$Basics$toString(_p19.score))),
+					_1: {
+						ctor: '::',
+						_0: A2(_user$project$Main$viewPlayField, _p19.grid, _elm_lang$core$Maybe$Nothing),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$TogglePlay),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Play'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Reset),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Reset'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				});
+		default:
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Press Play to start playing'),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_user$project$Main$viewPlayField,
+							A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows),
+							_elm_lang$core$Maybe$Nothing),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$TogglePlay),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Play'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Reset),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Reset'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				});
+	}
 };
 var _user$project$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
 var _user$project$Main$subscriptions = function (model) {
-	return model.playing ? _elm_lang$core$Platform_Sub$batch(
-		{
-			ctor: '::',
-			_0: _elm_lang$animation_frame$AnimationFrame$times(_user$project$Main$Tick),
-			_1: {
+	var _p20 = model.state;
+	if (_p20.ctor === 'Playing') {
+		return _elm_lang$core$Platform_Sub$batch(
+			{
 				ctor: '::',
-				_0: _elm_lang$keyboard$Keyboard$downs(_user$project$Main$handleDownKey),
+				_0: _elm_lang$animation_frame$AnimationFrame$diffs(_user$project$Main$Tick),
 				_1: {
 					ctor: '::',
-					_0: _elm_lang$keyboard$Keyboard$ups(_user$project$Main$handleUpKey),
-					_1: {ctor: '[]'}
+					_0: _elm_lang$keyboard$Keyboard$downs(_user$project$Main$handleDownKey),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$keyboard$Keyboard$ups(_user$project$Main$handleUpKey),
+						_1: {ctor: '[]'}
+					}
 				}
-			}
-		}) : _elm_lang$core$Platform_Sub$none;
+			});
+	} else {
+		return _elm_lang$core$Platform_Sub$none;
+	}
 };
 var _user$project$Main$main = _elm_lang$html$Html$program(
 	{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})();
