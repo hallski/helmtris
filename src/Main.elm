@@ -87,16 +87,16 @@ update msg model =
             togglePlaying model
 
         (Left, Playing game)->
-            { model | state = Playing <| modifyActiveBlock (Block.moveOn -1) game } ! []
+            playingNoCmd model <| modifyActiveBlock (Block.moveOn -1) game
 
         (Right, Playing game) ->
-            { model | state = Playing <| modifyActiveBlock (Block.moveOn 1) game } ! []
+            playingNoCmd model <| modifyActiveBlock (Block.moveOn 1) game
 
         (Rotate, Playing game) ->
-            { model | state = Playing <| modifyActiveBlock Block.rotateOn game } ! []
+            playingNoCmd model <| modifyActiveBlock Block.rotateOn game
 
         (Boost onOff, Playing game) ->
-            { model | state = Playing <| setBoost onOff game } ! []
+            playingNoCmd model <| setBoost onOff game
 
         (Reset, _) ->
             init
@@ -105,10 +105,15 @@ update msg model =
             startPlaying model blocks ! []
 
         (NextBlock block, Playing game) ->
-            { model | state = Playing <| nextBlockSpawned game block } ! []
+            playingNoCmd model <| nextBlockSpawned game block
 
         _ ->
             model ! []
+
+
+playingNoCmd : Model -> Game -> (Model, Cmd Msg)
+playingNoCmd model game =
+    { model | state = Playing game } ! []
 
 
 spawnNextBlock : Cmd Msg
