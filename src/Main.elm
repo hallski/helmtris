@@ -18,7 +18,7 @@ import Transform exposing (..)
 
 
 defaultTimeToUpdate : Time.Time
-defaultTimeToUpdate = 400 * Time.millisecond
+defaultTimeToUpdate = 450 * Time.millisecond
 
 
 boostedTimeToUpdate : Time.Time
@@ -27,6 +27,9 @@ boostedTimeToUpdate = 50 * Time.millisecond
 
 playFieldSize : { cols : Int, rows : Int}
 playFieldSize = { cols = 10, rows = 20 }
+
+rowsBetweenLevels : Int
+rowsBetweenLevels = 10
 
 
 type alias Score = Int
@@ -39,6 +42,8 @@ type alias Game =
     , score : Score
     , timeToUpdate : Time.Time
     , boost : Bool
+    , level : Int
+    , rowsToNewLevel : Int
     }
 
 
@@ -120,9 +125,11 @@ spawnNextBlock : Cmd Msg
 spawnNextBlock =
     Random.generate NextBlock Block.getRandom
 
+
 spawnInitialBlocks : Cmd Msg
 spawnInitialBlocks =
-    Random.generate InitialBlocks <| Random.pair Block.getRandom Block.getRandom
+    Random.pair Block.getRandom Block.getRandom
+        |> Random.generate InitialBlocks
 
 
 togglePlaying : Model -> (Model, Cmd Msg)
@@ -145,7 +152,7 @@ startPlaying : Model -> (Block.Block, Block.Block) -> Model
 startPlaying model (block, nextBlock) =
     let
         grid = Grid.empty playFieldSize.cols playFieldSize.rows
-        game = Game grid block (Just nextBlock) 0 defaultTimeToUpdate False
+        game = Game grid block (Just nextBlock) 0 defaultTimeToUpdate False 1 rowsBetweenLevels
     in
         { model | state = Playing game }
 
@@ -185,12 +192,28 @@ calculateScore removedLines oldScore =
             calculateScore (n - 1) (oldScore + n * 10)
 
 
-removeFullRows : Game -> Game
+removeFullRows : Game -> (Int, Game)
 removeFullRows game =
     let
         (removed, grid) = Grid.removeFullRows game.grid
+        score = calculateScore removed game.score
     in
-        { game | grid = grid, score = calculateScore removed game.score }
+        (removed, { game | grid = grid, score = score })
+
+updateLevel : (Int, Game) -> Game
+updateLevel (removedRows, game) =
+    let
+        rowsUntilNextLevel = game.rowsToNewLevel - removedRows
+
+        (level, rows) =
+            if rowsUntilNextLevel <= 0 then
+                ( game.level + 1, rowsBetweenLevels + rowsUntilNextLevel )
+            else
+                ( game.level, rowsUntilNextLevel )
+    in
+        { game | level = level, rowsToNewLevel = rows }
+
+
 
 
 attemptNextBlock : Game -> (GameState, Cmd Msg)
@@ -200,21 +223,31 @@ attemptNextBlock game =
             if Block.detectCollisionInGrid nextBlock game.grid then
                 GameOver game.score ! []
             else
-                Playing { game | activeBlock = nextBlock, nextBlock = Nothing } ! [ spawnNextBlock ]
+                Playing { game
+                        | activeBlock = nextBlock
+                        , nextBlock = Nothing
+                        } ! [ spawnNextBlock ]
 
         Nothing ->
             Playing game ! []
 
 
 landBlock : Game -> (GameState, Cmd Msg)
-landBlock =
-    attemptNextBlock << removeFullRows << copyBlockToGrid
+landBlock game =
+    copyBlockToGrid game
+        |> removeFullRows
+        |> updateLevel
+        |> attemptNextBlock
 
 
 resetTimeToNextUpdate : Game -> Game
 resetTimeToNextUpdate game =
     let
-        timeToUpdate = if game.boost then boostedTimeToUpdate else defaultTimeToUpdate
+        timeToUpdate =
+            if game.boost then
+                boostedTimeToUpdate
+            else
+                defaultTimeToUpdate - (toFloat game.level) * 50
     in
         { game | timeToUpdate = timeToUpdate }
 
@@ -317,7 +350,7 @@ view model =
                 [ text <| "Score: " ++ (toString game.score)
                 , div [ class "game-container" ]
                       [ viewPlayField game.grid <| Just game.activeBlock
-                      , viewPreview game.nextBlock
+                      , viewPreview game
                       ]
                 , button [ onClick TogglePlay ] [ text "Pause" ]
                 , button [ onClick Reset ] [ text "Reset" ]
@@ -340,9 +373,9 @@ view model =
                 ]
 
 
-viewPreview : Maybe Block.Block -> Html Msg
-viewPreview maybeBlock =
-    case maybeBlock of
+viewPreview : Game -> Html Msg
+viewPreview game =
+    case game.nextBlock of
         Just block ->
             let
                 (width, height) = Block.dimensions block
@@ -354,7 +387,8 @@ viewPreview maybeBlock =
                             |> Element.toHtml
             in
                 div [ class "preview" ]
-                    [ h2 [] [ text "Next block:" ]
+                    [ h2 [] [ text <| "Level: " ++ toString game.level]
+                    , h2 [] [ text "Next block:" ]
                     , preview
                     ]
 
