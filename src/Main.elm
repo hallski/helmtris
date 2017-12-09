@@ -341,8 +341,10 @@ viewPreview maybeBlock =
             let
                 (width, height) = Block.dimensions block
                 transformation = canvasTranslation width height
+                forms = [ Block.renderPreview block ]
+
                 preview = Collage.collage width height
-                            [ Collage.groupTransform transformation <| [ Block.renderPreview block ] ]
+                            [ Collage.groupTransform transformation forms ]
                             |> Element.toHtml
             in
                 div [ class "preview" ]
