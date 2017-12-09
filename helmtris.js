@@ -13009,10 +13009,15 @@ var _user$project$Main$canvasTranslation = F2(
 			_evancz$elm_graphics$Transform$scaleY(-1),
 			A2(_evancz$elm_graphics$Transform$translation, startX, startY));
 	});
-var _user$project$Main$viewPreview = function (maybeBlock) {
-	var _p0 = maybeBlock;
+var _user$project$Main$viewPreview = function (game) {
+	var _p0 = game.nextBlock;
 	if (_p0.ctor === 'Just') {
 		var _p2 = _p0._0;
+		var forms = {
+			ctor: '::',
+			_0: _user$project$Block$renderPreview(_p2),
+			_1: {ctor: '[]'}
+		};
 		var _p1 = _user$project$Block$dimensions(_p2);
 		var width = _p1._0;
 		var height = _p1._1;
@@ -13024,14 +13029,7 @@ var _user$project$Main$viewPreview = function (maybeBlock) {
 				height,
 				{
 					ctor: '::',
-					_0: A2(
-						_evancz$elm_graphics$Collage$groupTransform,
-						transformation,
-						{
-							ctor: '::',
-							_0: _user$project$Block$renderPreview(_p2),
-							_1: {ctor: '[]'}
-						}),
+					_0: A2(_evancz$elm_graphics$Collage$groupTransform, transformation, forms),
 					_1: {ctor: '[]'}
 				}));
 		return A2(
@@ -13048,13 +13046,28 @@ var _user$project$Main$viewPreview = function (maybeBlock) {
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text('Next block:'),
+						_0: _elm_lang$html$Html$text(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'Level: ',
+								_elm_lang$core$Basics$toString(game.level))),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
 					ctor: '::',
-					_0: preview,
-					_1: {ctor: '[]'}
+					_0: A2(
+						_elm_lang$html$Html$h2,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Next block:'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: preview,
+						_1: {ctor: '[]'}
+					}
 				}
 			});
 	} else {
@@ -13125,12 +13138,14 @@ var _user$project$Main$removeFullRows = function (game) {
 	var _p7 = _user$project$Grid$removeFullRows(game.grid);
 	var removed = _p7._0;
 	var grid = _p7._1;
-	return _elm_lang$core$Native_Utils.update(
-		game,
-		{
-			grid: grid,
-			score: A2(_user$project$Main$calculateScore, removed, game.score)
-		});
+	var score = A2(_user$project$Main$calculateScore, removed, game.score);
+	return {
+		ctor: '_Tuple2',
+		_0: removed,
+		_1: _elm_lang$core$Native_Utils.update(
+			game,
+			{grid: grid, score: score})
+	};
 };
 var _user$project$Main$copyBlockToGrid = function (game) {
 	return _elm_lang$core$Native_Utils.update(
@@ -13164,18 +13179,30 @@ var _user$project$Main$nextBlockSpawned = F2(
 				nextBlock: _elm_lang$core$Maybe$Just(block)
 			});
 	});
+var _user$project$Main$rowsBetweenLevels = 10;
+var _user$project$Main$updateLevel = function (_p9) {
+	var _p10 = _p9;
+	var _p12 = _p10._1;
+	var rowsUntilNextLevel = _p12.rowsToNewLevel - _p10._0;
+	var _p11 = (_elm_lang$core$Native_Utils.cmp(rowsUntilNextLevel, 0) < 1) ? {ctor: '_Tuple2', _0: _p12.level + 1, _1: _user$project$Main$rowsBetweenLevels + rowsUntilNextLevel} : {ctor: '_Tuple2', _0: _p12.level, _1: rowsUntilNextLevel};
+	var level = _p11._0;
+	var rows = _p11._1;
+	return _elm_lang$core$Native_Utils.update(
+		_p12,
+		{level: level, rowsToNewLevel: rows});
+};
 var _user$project$Main$playFieldSize = {cols: 10, rows: 20};
 var _user$project$Main$boostedTimeToUpdate = 50 * _elm_lang$core$Time$millisecond;
-var _user$project$Main$defaultTimeToUpdate = 400 * _elm_lang$core$Time$millisecond;
+var _user$project$Main$defaultTimeToUpdate = 450 * _elm_lang$core$Time$millisecond;
 var _user$project$Main$resetTimeToNextUpdate = function (game) {
-	var timeToUpdate = game.boost ? _user$project$Main$boostedTimeToUpdate : _user$project$Main$defaultTimeToUpdate;
+	var timeToUpdate = game.boost ? _user$project$Main$boostedTimeToUpdate : (_user$project$Main$defaultTimeToUpdate - (_elm_lang$core$Basics$toFloat(game.level) * 50));
 	return _elm_lang$core$Native_Utils.update(
 		game,
 		{timeToUpdate: timeToUpdate});
 };
-var _user$project$Main$Game = F6(
-	function (a, b, c, d, e, f) {
-		return {grid: a, activeBlock: b, nextBlock: c, score: d, timeToUpdate: e, boost: f};
+var _user$project$Main$Game = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {grid: a, activeBlock: b, nextBlock: c, score: d, timeToUpdate: e, boost: f, level: g, rowsToNewLevel: h};
 	});
 var _user$project$Main$Model = function (a) {
 	return {state: a};
@@ -13189,17 +13216,31 @@ var _user$project$Main$Paused = function (a) {
 var _user$project$Main$Playing = function (a) {
 	return {ctor: 'Playing', _0: a};
 };
+var _user$project$Main$playingNoCmd = F2(
+	function (model, game) {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_elm_lang$core$Native_Utils.update(
+				model,
+				{
+					state: _user$project$Main$Playing(game)
+				}),
+			{ctor: '[]'});
+	});
 var _user$project$Main$startPlaying = F2(
-	function (model, _p9) {
-		var _p10 = _p9;
-		var game = A6(
+	function (model, _p13) {
+		var _p14 = _p13;
+		var grid = A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows);
+		var game = A8(
 			_user$project$Main$Game,
-			A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows),
-			_p10._0,
-			_elm_lang$core$Maybe$Just(_p10._1),
+			grid,
+			_p14._0,
+			_elm_lang$core$Maybe$Just(_p14._1),
 			0,
 			_user$project$Main$defaultTimeToUpdate,
-			false);
+			false,
+			1,
+			_user$project$Main$rowsBetweenLevels);
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
@@ -13217,10 +13258,10 @@ var _user$project$Main$NextBlock = function (a) {
 };
 var _user$project$Main$spawnNextBlock = A2(_elm_lang$core$Random$generate, _user$project$Main$NextBlock, _user$project$Block$getRandom);
 var _user$project$Main$attemptNextBlock = function (game) {
-	var _p11 = game.nextBlock;
-	if (_p11.ctor === 'Just') {
-		var _p12 = _p11._0;
-		return A2(_user$project$Block$detectCollisionInGrid, _p12, game.grid) ? A2(
+	var _p15 = game.nextBlock;
+	if (_p15.ctor === 'Just') {
+		var _p16 = _p15._0;
+		return A2(_user$project$Block$detectCollisionInGrid, _p16, game.grid) ? A2(
 			_elm_lang$core$Platform_Cmd_ops['!'],
 			_user$project$Main$GameOver(game.score),
 			{ctor: '[]'}) : A2(
@@ -13228,7 +13269,7 @@ var _user$project$Main$attemptNextBlock = function (game) {
 			_user$project$Main$Playing(
 				_elm_lang$core$Native_Utils.update(
 					game,
-					{activeBlock: _p12, nextBlock: _elm_lang$core$Maybe$Nothing})),
+					{activeBlock: _p16, nextBlock: _elm_lang$core$Maybe$Nothing})),
 			{
 				ctor: '::',
 				_0: _user$project$Main$spawnNextBlock,
@@ -13241,20 +13282,21 @@ var _user$project$Main$attemptNextBlock = function (game) {
 			{ctor: '[]'});
 	}
 };
-var _user$project$Main$landBlock = function (_p13) {
+var _user$project$Main$landBlock = function (game) {
 	return _user$project$Main$attemptNextBlock(
-		_user$project$Main$removeFullRows(
-			_user$project$Main$copyBlockToGrid(_p13)));
+		_user$project$Main$updateLevel(
+			_user$project$Main$removeFullRows(
+				_user$project$Main$copyBlockToGrid(game))));
 };
 var _user$project$Main$advanceGame = function (game) {
-	var _p14 = A3(_user$project$Block$moveYOn, 1, game.grid, game.activeBlock);
-	if (_p14.ctor === 'Ok') {
+	var _p17 = A3(_user$project$Block$moveYOn, 1, game.grid, game.activeBlock);
+	if (_p17.ctor === 'Ok') {
 		return A2(
 			_elm_lang$core$Platform_Cmd_ops['!'],
 			_user$project$Main$Playing(
 				_elm_lang$core$Native_Utils.update(
 					game,
-					{activeBlock: _p14._0})),
+					{activeBlock: _p17._0})),
 			{ctor: '[]'});
 	} else {
 		return _user$project$Main$landBlock(game);
@@ -13280,15 +13322,15 @@ var _user$project$Main$spawnInitialBlocks = A2(
 	_user$project$Main$InitialBlocks,
 	A2(_elm_lang$core$Random$pair, _user$project$Block$getRandom, _user$project$Block$getRandom));
 var _user$project$Main$togglePlaying = function (model) {
-	var _p15 = model.state;
-	switch (_p15.ctor) {
+	var _p18 = model.state;
+	switch (_p18.ctor) {
 		case 'Playing':
 			return A2(
 				_elm_lang$core$Platform_Cmd_ops['!'],
 				_elm_lang$core$Native_Utils.update(
 					model,
 					{
-						state: _user$project$Main$Paused(_p15._0)
+						state: _user$project$Main$Paused(_p18._0)
 					}),
 				{ctor: '[]'});
 		case 'Paused':
@@ -13297,7 +13339,7 @@ var _user$project$Main$togglePlaying = function (model) {
 				_elm_lang$core$Native_Utils.update(
 					model,
 					{
-						state: _user$project$Main$Playing(_p15._0)
+						state: _user$project$Main$Playing(_p18._0)
 					}),
 				{ctor: '[]'});
 		case 'Initial':
@@ -13324,16 +13366,16 @@ var _user$project$Main$togglePlaying = function (model) {
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p16 = {ctor: '_Tuple2', _0: msg, _1: model.state};
-		_v10_9:
+		var _p19 = {ctor: '_Tuple2', _0: msg, _1: model.state};
+		_v11_9:
 		do {
-			if (_p16.ctor === '_Tuple2') {
-				switch (_p16._0.ctor) {
+			if (_p19.ctor === '_Tuple2') {
+				switch (_p19._0.ctor) {
 					case 'Tick':
-						if (_p16._1.ctor === 'Playing') {
-							var _p17 = A2(_user$project$Main$updateGame, _p16._1._0, _p16._0._0);
-							var updatedGameState = _p17._0;
-							var cmd = _p17._1;
+						if (_p19._1.ctor === 'Playing') {
+							var _p20 = A2(_user$project$Main$updateGame, _p19._1._0, _p19._0._0);
+							var updatedGameState = _p20._0;
+							var cmd = _p20._1;
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
 								_elm_lang$core$Native_Utils.update(
@@ -13345,102 +13387,77 @@ var _user$project$Main$update = F2(
 									_1: {ctor: '[]'}
 								});
 						} else {
-							break _v10_9;
+							break _v11_9;
 						}
 					case 'TogglePlay':
 						return _user$project$Main$togglePlaying(model);
 					case 'Left':
-						if (_p16._1.ctor === 'Playing') {
+						if (_p19._1.ctor === 'Playing') {
 							return A2(
-								_elm_lang$core$Platform_Cmd_ops['!'],
-								_elm_lang$core$Native_Utils.update(
-									model,
-									{
-										state: _user$project$Main$Playing(
-											A2(
-												_user$project$Main$modifyActiveBlock,
-												_user$project$Block$moveOn(-1),
-												_p16._1._0))
-									}),
-								{ctor: '[]'});
+								_user$project$Main$playingNoCmd,
+								model,
+								A2(
+									_user$project$Main$modifyActiveBlock,
+									_user$project$Block$moveOn(-1),
+									_p19._1._0));
 						} else {
-							break _v10_9;
+							break _v11_9;
 						}
 					case 'Right':
-						if (_p16._1.ctor === 'Playing') {
+						if (_p19._1.ctor === 'Playing') {
 							return A2(
-								_elm_lang$core$Platform_Cmd_ops['!'],
-								_elm_lang$core$Native_Utils.update(
-									model,
-									{
-										state: _user$project$Main$Playing(
-											A2(
-												_user$project$Main$modifyActiveBlock,
-												_user$project$Block$moveOn(1),
-												_p16._1._0))
-									}),
-								{ctor: '[]'});
+								_user$project$Main$playingNoCmd,
+								model,
+								A2(
+									_user$project$Main$modifyActiveBlock,
+									_user$project$Block$moveOn(1),
+									_p19._1._0));
 						} else {
-							break _v10_9;
+							break _v11_9;
 						}
 					case 'Rotate':
-						if (_p16._1.ctor === 'Playing') {
+						if (_p19._1.ctor === 'Playing') {
 							return A2(
-								_elm_lang$core$Platform_Cmd_ops['!'],
-								_elm_lang$core$Native_Utils.update(
-									model,
-									{
-										state: _user$project$Main$Playing(
-											A2(_user$project$Main$modifyActiveBlock, _user$project$Block$rotateOn, _p16._1._0))
-									}),
-								{ctor: '[]'});
+								_user$project$Main$playingNoCmd,
+								model,
+								A2(_user$project$Main$modifyActiveBlock, _user$project$Block$rotateOn, _p19._1._0));
 						} else {
-							break _v10_9;
+							break _v11_9;
 						}
 					case 'Boost':
-						if (_p16._1.ctor === 'Playing') {
+						if (_p19._1.ctor === 'Playing') {
 							return A2(
-								_elm_lang$core$Platform_Cmd_ops['!'],
-								_elm_lang$core$Native_Utils.update(
-									model,
-									{
-										state: _user$project$Main$Playing(
-											A2(_user$project$Main$setBoost, _p16._0._0, _p16._1._0))
-									}),
-								{ctor: '[]'});
+								_user$project$Main$playingNoCmd,
+								model,
+								A2(_user$project$Main$setBoost, _p19._0._0, _p19._1._0));
 						} else {
-							break _v10_9;
+							break _v11_9;
 						}
 					case 'Reset':
 						return _user$project$Main$init;
 					case 'InitialBlocks':
-						if (_p16._1.ctor === 'Initial') {
+						if (_p19._1.ctor === 'Initial') {
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
-								A2(_user$project$Main$startPlaying, model, _p16._0._0),
+								A2(_user$project$Main$startPlaying, model, _p19._0._0),
 								{ctor: '[]'});
 						} else {
-							break _v10_9;
+							break _v11_9;
 						}
 					case 'NextBlock':
-						if (_p16._1.ctor === 'Playing') {
+						if (_p19._1.ctor === 'Playing') {
 							return A2(
-								_elm_lang$core$Platform_Cmd_ops['!'],
-								_elm_lang$core$Native_Utils.update(
-									model,
-									{
-										state: _user$project$Main$Playing(
-											A2(_user$project$Main$nextBlockSpawned, _p16._1._0, _p16._0._0))
-									}),
-								{ctor: '[]'});
+								_user$project$Main$playingNoCmd,
+								model,
+								A2(_user$project$Main$nextBlockSpawned, _p19._1._0, _p19._0._0));
 						} else {
-							break _v10_9;
+							break _v11_9;
 						}
 					default:
-						break _v10_9;
+						break _v11_9;
 				}
 			} else {
-				break _v10_9;
+				break _v11_9;
 			}
 		} while(false);
 		return A2(
@@ -13453,8 +13470,8 @@ var _user$project$Main$Boost = function (a) {
 	return {ctor: 'Boost', _0: a};
 };
 var _user$project$Main$handleUpKey = function (code) {
-	var _p18 = code;
-	switch (_p18) {
+	var _p21 = code;
+	switch (_p21) {
 		case 83:
 			return _user$project$Main$Boost(false);
 		case 40:
@@ -13467,8 +13484,8 @@ var _user$project$Main$Rotate = {ctor: 'Rotate'};
 var _user$project$Main$Right = {ctor: 'Right'};
 var _user$project$Main$Left = {ctor: 'Left'};
 var _user$project$Main$handleDownKey = function (code) {
-	var _p19 = code;
-	switch (_p19) {
+	var _p22 = code;
+	switch (_p22) {
 		case 65:
 			return _user$project$Main$Left;
 		case 68:
@@ -13491,8 +13508,8 @@ var _user$project$Main$handleDownKey = function (code) {
 };
 var _user$project$Main$TogglePlay = {ctor: 'TogglePlay'};
 var _user$project$Main$view = function (model) {
-	var _p20 = model.state;
-	switch (_p20.ctor) {
+	var _p23 = model.state;
+	switch (_p23.ctor) {
 		case 'GameOver':
 			return A2(
 				_elm_lang$html$Html$div,
@@ -13503,7 +13520,7 @@ var _user$project$Main$view = function (model) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'GAME OVER with score: ',
-							_elm_lang$core$Basics$toString(_p20._0))),
+							_elm_lang$core$Basics$toString(_p23._0))),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -13529,7 +13546,7 @@ var _user$project$Main$view = function (model) {
 					}
 				});
 		case 'Playing':
-			var _p21 = _p20._0;
+			var _p24 = _p23._0;
 			return A2(
 				_elm_lang$html$Html$div,
 				{ctor: '[]'},
@@ -13539,7 +13556,7 @@ var _user$project$Main$view = function (model) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'Score: ',
-							_elm_lang$core$Basics$toString(_p21.score))),
+							_elm_lang$core$Basics$toString(_p24.score))),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -13553,11 +13570,11 @@ var _user$project$Main$view = function (model) {
 								ctor: '::',
 								_0: A2(
 									_user$project$Main$viewPlayField,
-									_p21.grid,
-									_elm_lang$core$Maybe$Just(_p21.activeBlock)),
+									_p24.grid,
+									_elm_lang$core$Maybe$Just(_p24.activeBlock)),
 								_1: {
 									ctor: '::',
-									_0: _user$project$Main$viewPreview(_p21.nextBlock),
+									_0: _user$project$Main$viewPreview(_p24),
 									_1: {ctor: '[]'}
 								}
 							}),
@@ -13595,7 +13612,7 @@ var _user$project$Main$view = function (model) {
 					}
 				});
 		case 'Paused':
-			var _p22 = _p20._0;
+			var _p25 = _p23._0;
 			return A2(
 				_elm_lang$html$Html$div,
 				{ctor: '[]'},
@@ -13605,10 +13622,10 @@ var _user$project$Main$view = function (model) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'Score: ',
-							_elm_lang$core$Basics$toString(_p22.score))),
+							_elm_lang$core$Basics$toString(_p25.score))),
 					_1: {
 						ctor: '::',
-						_0: A2(_user$project$Main$viewPlayField, _p22.grid, _elm_lang$core$Maybe$Nothing),
+						_0: A2(_user$project$Main$viewPlayField, _p25.grid, _elm_lang$core$Maybe$Nothing),
 						_1: {
 							ctor: '::',
 							_0: A2(
@@ -13694,8 +13711,8 @@ var _user$project$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
 var _user$project$Main$subscriptions = function (model) {
-	var _p23 = model.state;
-	if (_p23.ctor === 'Playing') {
+	var _p26 = model.state;
+	if (_p26.ctor === 'Playing') {
 		return _elm_lang$core$Platform_Sub$batch(
 			{
 				ctor: '::',
