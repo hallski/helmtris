@@ -144,7 +144,8 @@ togglePlaying model =
 startPlaying : Model -> (Block.Block, Block.Block) -> Model
 startPlaying model (block, nextBlock) =
     let
-        game = Game (Grid.empty playFieldSize.cols playFieldSize.rows) block (Just nextBlock) 0 defaultTimeToUpdate False
+        grid = Grid.empty playFieldSize.cols playFieldSize.rows
+        game = Game grid block (Just nextBlock) 0 defaultTimeToUpdate False
     in
         { model | state = Playing game }
 
