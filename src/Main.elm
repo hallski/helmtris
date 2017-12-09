@@ -9,6 +9,7 @@ import Collage
 import Color exposing (..)
 import Element
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, on, keyCode)
 import Keyboard as KB
 import Random
@@ -28,20 +29,13 @@ playFieldSize : { cols : Int, rows : Int}
 playFieldSize = { cols = 10, rows = 20 }
 
 
-playFieldDimensions : { width : Int, height : Int}
-playFieldDimensions =
-    { width = playFieldSize.cols * Grid.cellSize
-    , height = playFieldSize.rows * Grid.cellSize
-    }
-
-
 type alias Score = Int
 
 
 type alias Game =
     { grid : Grid.Grid
     , activeBlock : Block.Block
-  --  , nextBlock : Block.Block
+    , nextBlock : Maybe Block.Block
     , score : Score
     , timeToUpdate : Time.Time
     , boost : Bool
@@ -75,6 +69,7 @@ type Msg
     | Rotate
     | Boost Bool
     | Reset
+    | InitialBlocks (Block.Block, Block.Block)
     | NextBlock Block.Block
     | NoOp -- Needed by handleKey
 
@@ -84,9 +79,9 @@ update msg model =
     case (msg, model.state) of
         (Tick diff, Playing game) ->
             let
-                (updatedGame, cmd) = updateGame game diff
+                (updatedGameState, cmd) = updateGame game diff
             in
-                { model | state = Playing updatedGame } ! [ cmd ]
+                { model | state = updatedGameState } ! [ cmd ]
 
         (TogglePlay, _) ->
             togglePlaying model
@@ -106,17 +101,23 @@ update msg model =
         (Reset, _) ->
             init
 
-        (NextBlock block, _) ->
-            newBlockSpawned model block ! []
+        (InitialBlocks blocks, Initial) ->
+            startPlaying model blocks ! []
+
+        (NextBlock block, Playing game) ->
+            { model | state = Playing <| nextBlockSpawned game block } ! []
 
         _ ->
             model ! []
 
 
-spawnNewBlock : Cmd Msg
-spawnNewBlock =
+spawnNextBlock : Cmd Msg
+spawnNextBlock =
     Random.generate NextBlock Block.getRandom
 
+spawnInitialBlocks : Cmd Msg
+spawnInitialBlocks =
+    Random.generate InitialBlocks <| Random.pair Block.getRandom Block.getRandom
 
 
 togglePlaying : Model -> (Model, Cmd Msg)
@@ -129,34 +130,23 @@ togglePlaying model =
             { model | state = Playing game } ! []
 
         Initial ->
-            model ! [ spawnNewBlock ]
+            model ! [ spawnInitialBlocks ]
 
         GameOver _ ->
-            { model | state = Initial } ! [ spawnNewBlock ]
+            { model | state = Initial } ! [ spawnInitialBlocks ]
 
 
-startPlaying : Model -> Block.Block -> Model
-startPlaying model block =
+startPlaying : Model -> (Block.Block, Block.Block) -> Model
+startPlaying model (block, nextBlock) =
     let
-        game = Game (Grid.empty playFieldSize.cols playFieldSize.rows) block 0 defaultTimeToUpdate False
+        game = Game (Grid.empty playFieldSize.cols playFieldSize.rows) block (Just nextBlock) 0 defaultTimeToUpdate False
     in
         { model | state = Playing game }
 
 
-newBlockSpawned : Model -> Block.Block -> Model
-newBlockSpawned model block =
-    case model.state of
-        Playing game ->
-            if Block.detectCollisionInGrid block game.grid then
-                { model | state = GameOver game.score }
-            else
-                { model | state = Playing { game | activeBlock = block } }
-
-        Initial ->
-            startPlaying model block
-
-        _ ->
-            model
+nextBlockSpawned : Game -> Block.Block -> Game
+nextBlockSpawned game block =
+    { game | nextBlock = Just block }
 
 
 setBoost : Bool -> Game -> Game
@@ -197,38 +187,51 @@ removeFullRows game =
         { game | grid = grid, score = calculateScore removed game.score }
 
 
-landBlock : Game -> Game
+attemptNextBlock : Game -> (GameState, Cmd Msg)
+attemptNextBlock game =
+    case game.nextBlock of
+        Just nextBlock ->
+            if Block.detectCollisionInGrid nextBlock game.grid then
+                GameOver game.score ! []
+            else
+                Playing { game | activeBlock = nextBlock, nextBlock = Nothing } ! [ spawnNextBlock ]
+
+        Nothing ->
+            Playing game ! []
+
+
+landBlock : Game -> (GameState, Cmd Msg)
 landBlock =
-    removeFullRows << copyBlockToGrid
+    attemptNextBlock << removeFullRows << copyBlockToGrid
 
 
-resetTimeToNextUpdate : (Game, Cmd Msg) -> (Game, Cmd Msg)
-resetTimeToNextUpdate (game, cmd) =
+resetTimeToNextUpdate : Game -> Game
+resetTimeToNextUpdate game =
     let
         timeToUpdate = if game.boost then boostedTimeToUpdate else defaultTimeToUpdate
     in
-        ( { game | timeToUpdate = timeToUpdate }, cmd )
+        { game | timeToUpdate = timeToUpdate }
 
 
-updateGame : Game -> Time.Time -> (Game, Cmd Msg)
+updateGame : Game -> Time.Time -> (GameState, Cmd Msg)
 updateGame game diff =
     let
         timeToUpdate = game.timeToUpdate - diff
     in
         if timeToUpdate < 0 then
-            resetTimeToNextUpdate <| advanceGame game
+            advanceGame <| resetTimeToNextUpdate game
         else
-            { game | timeToUpdate = timeToUpdate } ! []
+            Playing { game | timeToUpdate = timeToUpdate } ! []
 
 
-advanceGame : Game -> (Game, Cmd Msg)
+advanceGame : Game -> (GameState, Cmd Msg)
 advanceGame game =
     case Block.moveYOn 1 game.grid game.activeBlock of
         Ok block ->
-            { game | activeBlock = block } ! []
+            Playing { game | activeBlock = block } ! []
 
         _ ->
-            landBlock game ! [ spawnNewBlock ]
+            landBlock game
 
 
 -- Subscriptions
@@ -284,11 +287,11 @@ handleUpKey code =
   forms anchored to the center as well, flip the Y axis and translate origin to be half a cellSize
   in from the top left.
 --}
-canvasTranslation : Transform.Transform
-canvasTranslation =
+canvasTranslation : Int -> Int -> Transform.Transform
+canvasTranslation width height =
     let
-        startX = -(toFloat (playFieldDimensions.width - Grid.cellSize)) / 2
-        startY = -(toFloat (playFieldDimensions.height - Grid.cellSize)) / 2
+        startX = -(toFloat <| width - Grid.cellSize) / 2
+        startY = -(toFloat <| height - Grid.cellSize) / 2
     in
         Transform.multiply (Transform.scaleY -1) (Transform.translation startX startY)
 
@@ -306,7 +309,10 @@ view model =
         Playing game ->
             div [ ]
                 [ text <| "Score: " ++ (toString game.score)
-                , viewPlayField game.grid <| Just game.activeBlock
+                , div [ class "game-container" ]
+                      [ viewPlayField game.grid <| Just game.activeBlock
+                      , viewPreview game.nextBlock
+                      ]
                 , button [ onClick TogglePlay ] [ text "Pause" ]
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
@@ -328,6 +334,26 @@ view model =
                 ]
 
 
+viewPreview : Maybe Block.Block -> Html Msg
+viewPreview maybeBlock =
+    case maybeBlock of
+        Just block ->
+            let
+                (width, height) = Block.dimensions block
+                transformation = canvasTranslation width height
+                preview = Collage.collage width height
+                            [ Collage.groupTransform transformation <| [ Block.renderPreview block ] ]
+                            |> Element.toHtml
+            in
+                div [ class "preview" ]
+                    [ h2 [] [ text "Next block:" ]
+                    , preview
+                    ]
+
+        Nothing ->
+            div [] []
+
+
 viewPlayField : Grid.Grid -> Maybe Block.Block -> Html Msg
 viewPlayField grid maybeBlock =
     let
@@ -340,9 +366,11 @@ viewPlayField grid maybeBlock =
             Nothing ->
                 [ Grid.render 0 0 grid ]
 
+        (gridWidth, gridHeight) = Grid.dimensions grid
+        transformation = canvasTranslation gridWidth gridHeight
     in
-        Collage.collage playFieldDimensions.width playFieldDimensions.height
-            [ Collage.groupTransform canvasTranslation forms ]
+        Collage.collage gridWidth gridHeight
+            [ Collage.groupTransform transformation forms ]
             |> Element.color gray
             |> Element.toHtml
 

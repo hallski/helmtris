@@ -1,12 +1,14 @@
 module Block exposing
     ( Block
     , BlockManipulation
-    , getRandom
-    , detectCollisionInGrid
-    , render
     , copyOntoGrid
+    , detectCollisionInGrid
+    , dimensions
+    , getRandom
     , moveOn
     , moveYOn
+    , render
+    , renderPreview
     , rotateOn
     )
 
@@ -131,7 +133,6 @@ boardPositiveX (Block block) =
     else
         Err "Board X is negative"
 
-
 boardWithinGridWidth : Grid.Grid -> Block -> Result String Block
 boardWithinGridWidth grid (Block block) =
     if (block.x + Grid.width block.grid) <= Grid.width grid then
@@ -147,14 +148,6 @@ withoutCollision grid block =
     else
         Ok block
 
-render : Block -> Collage.Form
-render (Block block) =
-    let
-        xOffset = (toFloat (block.x * Grid.cellSize))
-        yOffset = (toFloat (block.y * Grid.cellSize))
-    in
-        Grid.render xOffset yOffset block.grid
-
 
 detectCollisionInGrid : Block -> Grid.Grid -> Bool
 detectCollisionInGrid (Block block) grid =
@@ -164,3 +157,24 @@ detectCollisionInGrid (Block block) grid =
 copyOntoGrid : Block -> Grid.Grid -> Grid.Grid
 copyOntoGrid (Block block) grid =
     Grid.copyOnto block.y (toGrid (Block block)) grid
+
+
+render : Block -> Collage.Form
+render (Block block) =
+    let
+        xOffset = (toFloat (block.x * Grid.cellSize))
+        yOffset = (toFloat (block.y * Grid.cellSize))
+    in
+        Grid.render xOffset yOffset block.grid
+
+
+renderPreview : Block -> Collage.Form
+renderPreview (Block block) =
+    let
+        grayBlockGrid = Grid.mapCells (\(x, _) -> (x, gray)) block.grid
+    in
+        Grid.render 0 0 block.grid -- grayBlockGrid
+
+dimensions : Block -> (Int, Int)
+dimensions (Block block) =
+    Grid.dimensions block.grid

@@ -1,0 +1,7 @@
+.game-container {
+  display: flex;
+}
+
+.preview {
+  margin-left: 50px;
+}

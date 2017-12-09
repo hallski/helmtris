@@ -3,8 +3,10 @@ module Grid exposing
     , cellSize
     , copyOnto
     , detectCollision
+    , dimensions
     , empty
     , fromListsOfCells
+    , height
     , mapCells
     , removeFullRows
     , render
@@ -75,10 +77,10 @@ copyOnto yOffset (Grid _ sourceRows source) (Grid tcols trows target) =
 
 
 detectCollision : Int -> Grid -> Grid -> Bool
-detectCollision yOffset (Grid _ _ grid1) (Grid _ _ grid2) =
+detectCollision yOffset (Grid _ _ grid1) (Grid cols2 _ grid2) =
     let
         stopRow =
-            List.range 0 9 |> List.map (flip (,) gray)
+            List.range 0 cols2 |> List.map (flip (,) gray)
 
         gridWithStop = List.append grid2 [stopRow]
         findCollisionsInRows blockRow landedRow =
@@ -110,6 +112,7 @@ height (Grid _ rows grid) =
 width : Grid -> Int
 width (Grid cols _ grid) =
     cols
+
 
 rotate : Grid -> Grid
 rotate (Grid cols rows grid) =
@@ -164,3 +167,8 @@ render : Float -> Float -> Grid -> Collage.Form
 render xOffset yOffset (Grid _ _ lines) =
     renderLines xOffset yOffset lines []
         |> Collage.group
+
+
+dimensions : Grid -> (Int, Int)
+dimensions grid =
+    (cellSize * width grid, cellSize * height grid)
