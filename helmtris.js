@@ -9244,6 +9244,356 @@ var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
 var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
 var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 
+var _elm_lang$html$Html_Attributes$map = _elm_lang$virtual_dom$VirtualDom$mapProperty;
+var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
+var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
+};
+var _elm_lang$html$Html_Attributes$draggable = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
+};
+var _elm_lang$html$Html_Attributes$itemprop = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'itemprop', value);
+};
+var _elm_lang$html$Html_Attributes$tabindex = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'tabIndex',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$charset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'charset', value);
+};
+var _elm_lang$html$Html_Attributes$height = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'height',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$width = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'width',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$formaction = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'formAction', value);
+};
+var _elm_lang$html$Html_Attributes$list = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
+};
+var _elm_lang$html$Html_Attributes$minlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'minLength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$maxlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'maxlength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$size = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'size',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$form = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'form', value);
+};
+var _elm_lang$html$Html_Attributes$cols = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'cols',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rows = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rows',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$challenge = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'challenge', value);
+};
+var _elm_lang$html$Html_Attributes$media = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'media', value);
+};
+var _elm_lang$html$Html_Attributes$rel = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'rel', value);
+};
+var _elm_lang$html$Html_Attributes$datetime = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
+};
+var _elm_lang$html$Html_Attributes$pubdate = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
+};
+var _elm_lang$html$Html_Attributes$colspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'colspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rowspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rowspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$manifest = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'manifest', value);
+};
+var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
+var _elm_lang$html$Html_Attributes$stringProperty = F2(
+	function (name, string) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$string(string));
+	});
+var _elm_lang$html$Html_Attributes$class = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
+};
+var _elm_lang$html$Html_Attributes$id = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'id', name);
+};
+var _elm_lang$html$Html_Attributes$title = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'title', name);
+};
+var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'accessKey',
+		_elm_lang$core$String$fromChar($char));
+};
+var _elm_lang$html$Html_Attributes$dir = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
+};
+var _elm_lang$html$Html_Attributes$dropzone = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
+};
+var _elm_lang$html$Html_Attributes$lang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'lang', value);
+};
+var _elm_lang$html$Html_Attributes$content = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'content', value);
+};
+var _elm_lang$html$Html_Attributes$httpEquiv = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'httpEquiv', value);
+};
+var _elm_lang$html$Html_Attributes$language = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'language', value);
+};
+var _elm_lang$html$Html_Attributes$src = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'src', value);
+};
+var _elm_lang$html$Html_Attributes$alt = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'alt', value);
+};
+var _elm_lang$html$Html_Attributes$preload = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'preload', value);
+};
+var _elm_lang$html$Html_Attributes$poster = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'poster', value);
+};
+var _elm_lang$html$Html_Attributes$kind = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'kind', value);
+};
+var _elm_lang$html$Html_Attributes$srclang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srclang', value);
+};
+var _elm_lang$html$Html_Attributes$sandbox = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'sandbox', value);
+};
+var _elm_lang$html$Html_Attributes$srcdoc = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srcdoc', value);
+};
+var _elm_lang$html$Html_Attributes$type_ = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'type', value);
+};
+var _elm_lang$html$Html_Attributes$value = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'value', value);
+};
+var _elm_lang$html$Html_Attributes$defaultValue = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'defaultValue', value);
+};
+var _elm_lang$html$Html_Attributes$placeholder = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'placeholder', value);
+};
+var _elm_lang$html$Html_Attributes$accept = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'accept', value);
+};
+var _elm_lang$html$Html_Attributes$acceptCharset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'acceptCharset', value);
+};
+var _elm_lang$html$Html_Attributes$action = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'action', value);
+};
+var _elm_lang$html$Html_Attributes$autocomplete = function (bool) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'autocomplete',
+		bool ? 'on' : 'off');
+};
+var _elm_lang$html$Html_Attributes$enctype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'enctype', value);
+};
+var _elm_lang$html$Html_Attributes$method = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'method', value);
+};
+var _elm_lang$html$Html_Attributes$name = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'name', value);
+};
+var _elm_lang$html$Html_Attributes$pattern = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pattern', value);
+};
+var _elm_lang$html$Html_Attributes$for = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'htmlFor', value);
+};
+var _elm_lang$html$Html_Attributes$max = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'max', value);
+};
+var _elm_lang$html$Html_Attributes$min = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'min', value);
+};
+var _elm_lang$html$Html_Attributes$step = function (n) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'step', n);
+};
+var _elm_lang$html$Html_Attributes$wrap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'wrap', value);
+};
+var _elm_lang$html$Html_Attributes$usemap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'useMap', value);
+};
+var _elm_lang$html$Html_Attributes$shape = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'shape', value);
+};
+var _elm_lang$html$Html_Attributes$coords = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'coords', value);
+};
+var _elm_lang$html$Html_Attributes$keytype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'keytype', value);
+};
+var _elm_lang$html$Html_Attributes$align = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'align', value);
+};
+var _elm_lang$html$Html_Attributes$cite = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'cite', value);
+};
+var _elm_lang$html$Html_Attributes$href = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'href', value);
+};
+var _elm_lang$html$Html_Attributes$target = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'target', value);
+};
+var _elm_lang$html$Html_Attributes$downloadAs = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'download', value);
+};
+var _elm_lang$html$Html_Attributes$hreflang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'hreflang', value);
+};
+var _elm_lang$html$Html_Attributes$ping = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'ping', value);
+};
+var _elm_lang$html$Html_Attributes$start = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'start',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$headers = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
+};
+var _elm_lang$html$Html_Attributes$scope = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
+};
+var _elm_lang$html$Html_Attributes$boolProperty = F2(
+	function (name, bool) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$bool(bool));
+	});
+var _elm_lang$html$Html_Attributes$hidden = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'hidden', bool);
+};
+var _elm_lang$html$Html_Attributes$contenteditable = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'contentEditable', bool);
+};
+var _elm_lang$html$Html_Attributes$spellcheck = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'spellcheck', bool);
+};
+var _elm_lang$html$Html_Attributes$async = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'async', bool);
+};
+var _elm_lang$html$Html_Attributes$defer = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'defer', bool);
+};
+var _elm_lang$html$Html_Attributes$scoped = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'scoped', bool);
+};
+var _elm_lang$html$Html_Attributes$autoplay = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autoplay', bool);
+};
+var _elm_lang$html$Html_Attributes$controls = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'controls', bool);
+};
+var _elm_lang$html$Html_Attributes$loop = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'loop', bool);
+};
+var _elm_lang$html$Html_Attributes$default = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'default', bool);
+};
+var _elm_lang$html$Html_Attributes$seamless = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'seamless', bool);
+};
+var _elm_lang$html$Html_Attributes$checked = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'checked', bool);
+};
+var _elm_lang$html$Html_Attributes$selected = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'selected', bool);
+};
+var _elm_lang$html$Html_Attributes$autofocus = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autofocus', bool);
+};
+var _elm_lang$html$Html_Attributes$disabled = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'disabled', bool);
+};
+var _elm_lang$html$Html_Attributes$multiple = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'multiple', bool);
+};
+var _elm_lang$html$Html_Attributes$novalidate = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'noValidate', bool);
+};
+var _elm_lang$html$Html_Attributes$readonly = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'readOnly', bool);
+};
+var _elm_lang$html$Html_Attributes$required = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'required', bool);
+};
+var _elm_lang$html$Html_Attributes$ismap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'isMap', value);
+};
+var _elm_lang$html$Html_Attributes$download = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'download', bool);
+};
+var _elm_lang$html$Html_Attributes$reversed = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'reversed', bool);
+};
+var _elm_lang$html$Html_Attributes$classList = function (list) {
+	return _elm_lang$html$Html_Attributes$class(
+		A2(
+			_elm_lang$core$String$join,
+			' ',
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Tuple$first,
+				A2(_elm_lang$core$List$filter, _elm_lang$core$Tuple$second, list))));
+};
+var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
+
 var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode$field, 'keyCode', _elm_lang$core$Json_Decode$int);
 var _elm_lang$html$Html_Events$targetChecked = A2(
 	_elm_lang$core$Json_Decode$at,
@@ -12009,7 +12359,7 @@ var _user$project$Grid$detectCollision = F3(
 						return {ctor: '_Tuple2', _0: v0, _1: v1};
 					}),
 				_elm_lang$core$Color$gray),
-			A2(_elm_lang$core$List$range, 0, 9));
+			A2(_elm_lang$core$List$range, 0, _p7._0));
 		var gridWithStop = A2(
 			_elm_lang$core$List$append,
 			_p7._2,
@@ -12096,6 +12446,13 @@ var _user$project$Grid$render = F3(
 				_p11._2,
 				{ctor: '[]'}));
 	});
+var _user$project$Grid$dimensions = function (grid) {
+	return {
+		ctor: '_Tuple2',
+		_0: _user$project$Grid$cellSize * _user$project$Grid$width(grid),
+		_1: _user$project$Grid$cellSize * _user$project$Grid$height(grid)
+	};
+};
 var _user$project$Grid$Grid = F3(
 	function (a, b, c) {
 		return {ctor: 'Grid', _0: a, _1: b, _2: c};
@@ -12272,24 +12629,40 @@ var _user$project$Grid$rotate = function (_p31) {
 	return A3(_user$project$Grid$Grid, _p32._1, _p35, newGrid);
 };
 
-var _user$project$Block$render = function (_p0) {
+var _user$project$Block$dimensions = function (_p0) {
 	var _p1 = _p0;
-	var _p2 = _p1._0;
-	var yOffset = _elm_lang$core$Basics$toFloat(_p2.y * _user$project$Grid$cellSize);
-	var xOffset = _elm_lang$core$Basics$toFloat(_p2.x * _user$project$Grid$cellSize);
-	return A3(_user$project$Grid$render, xOffset, yOffset, _p2.grid);
+	return _user$project$Grid$dimensions(_p1._0.grid);
 };
-var _user$project$Block$toGrid = function (_p3) {
-	var _p4 = _p3;
-	var _p5 = _p4._0;
+var _user$project$Block$renderPreview = function (_p2) {
+	var _p3 = _p2;
+	var _p6 = _p3._0;
+	var grayBlockGrid = A2(
+		_user$project$Grid$mapCells,
+		function (_p4) {
+			var _p5 = _p4;
+			return {ctor: '_Tuple2', _0: _p5._0, _1: _elm_lang$core$Color$gray};
+		},
+		_p6.grid);
+	return A3(_user$project$Grid$render, 0, 0, _p6.grid);
+};
+var _user$project$Block$render = function (_p7) {
+	var _p8 = _p7;
+	var _p9 = _p8._0;
+	var yOffset = _elm_lang$core$Basics$toFloat(_p9.y * _user$project$Grid$cellSize);
+	var xOffset = _elm_lang$core$Basics$toFloat(_p9.x * _user$project$Grid$cellSize);
+	return A3(_user$project$Grid$render, xOffset, yOffset, _p9.grid);
+};
+var _user$project$Block$toGrid = function (_p10) {
+	var _p11 = _p10;
+	var _p12 = _p11._0;
 	return A2(
 		_user$project$Grid$mapCells,
 		_elm_lang$core$Tuple$mapFirst(
 			F2(
 				function (x, y) {
 					return x + y;
-				})(_p5.x)),
-		_p5.grid);
+				})(_p12.x)),
+		_p12.grid);
 };
 var _user$project$Block$Block = function (a) {
 	return {ctor: 'Block', _0: a};
@@ -12537,30 +12910,30 @@ var _user$project$Block$getRandom = A2(
 		_elm_lang$core$Random$int,
 		0,
 		_elm_lang$core$List$length(_user$project$Block$availableBlocks) - 1));
-var _user$project$Block$boardPositiveX = function (_p6) {
-	var _p7 = _p6;
-	var _p8 = _p7._0;
-	return (_elm_lang$core$Native_Utils.cmp(_p8.x, 0) > -1) ? _elm_lang$core$Result$Ok(
-		_user$project$Block$Block(_p8)) : _elm_lang$core$Result$Err('Board X is negative');
+var _user$project$Block$boardPositiveX = function (_p13) {
+	var _p14 = _p13;
+	var _p15 = _p14._0;
+	return (_elm_lang$core$Native_Utils.cmp(_p15.x, 0) > -1) ? _elm_lang$core$Result$Ok(
+		_user$project$Block$Block(_p15)) : _elm_lang$core$Result$Err('Board X is negative');
 };
 var _user$project$Block$boardWithinGridWidth = F2(
-	function (grid, _p9) {
-		var _p10 = _p9;
-		var _p11 = _p10._0;
+	function (grid, _p16) {
+		var _p17 = _p16;
+		var _p18 = _p17._0;
 		return (_elm_lang$core$Native_Utils.cmp(
-			_p11.x + _user$project$Grid$width(_p11.grid),
+			_p18.x + _user$project$Grid$width(_p18.grid),
 			_user$project$Grid$width(grid)) < 1) ? _elm_lang$core$Result$Ok(
-			_user$project$Block$Block(_p11)) : _elm_lang$core$Result$Err('Block trailed off the grid');
+			_user$project$Block$Block(_p18)) : _elm_lang$core$Result$Err('Block trailed off the grid');
 	});
 var _user$project$Block$detectCollisionInGrid = F2(
-	function (_p12, grid) {
-		var _p13 = _p12;
-		var _p14 = _p13._0;
+	function (_p19, grid) {
+		var _p20 = _p19;
+		var _p21 = _p20._0;
 		return A3(
 			_user$project$Grid$detectCollision,
-			_p14.y,
+			_p21.y,
 			_user$project$Block$toGrid(
-				_user$project$Block$Block(_p14)),
+				_user$project$Block$Block(_p21)),
 			grid);
 	});
 var _user$project$Block$withoutCollision = F2(
@@ -12578,132 +12951,134 @@ var _user$project$Block$validateOnGrid = F2(
 				_user$project$Block$boardPositiveX(block)));
 	});
 var _user$project$Block$moveOn = F3(
-	function (dx, grid, _p15) {
-		var _p16 = _p15;
-		var _p17 = _p16._0;
+	function (dx, grid, _p22) {
+		var _p23 = _p22;
+		var _p24 = _p23._0;
 		return A2(
 			_user$project$Block$validateOnGrid,
 			grid,
 			_user$project$Block$Block(
 				_elm_lang$core$Native_Utils.update(
-					_p17,
-					{x: _p17.x + dx})));
+					_p24,
+					{x: _p24.x + dx})));
 	});
 var _user$project$Block$moveYOn = F3(
-	function (dy, grid, _p18) {
-		var _p19 = _p18;
-		var _p20 = _p19._0;
+	function (dy, grid, _p25) {
+		var _p26 = _p25;
+		var _p27 = _p26._0;
 		return A2(
 			_user$project$Block$validateOnGrid,
 			grid,
 			_user$project$Block$Block(
 				_elm_lang$core$Native_Utils.update(
-					_p20,
-					{y: _p20.y + dy})));
+					_p27,
+					{y: _p27.y + dy})));
 	});
 var _user$project$Block$rotateOn = F2(
-	function (grid, _p21) {
-		var _p22 = _p21;
-		var _p23 = _p22._0;
+	function (grid, _p28) {
+		var _p29 = _p28;
+		var _p30 = _p29._0;
 		return A2(
 			_user$project$Block$validateOnGrid,
 			grid,
 			_user$project$Block$Block(
 				_elm_lang$core$Native_Utils.update(
-					_p23,
+					_p30,
 					{
-						grid: _user$project$Grid$rotate(_p23.grid)
+						grid: _user$project$Grid$rotate(_p30.grid)
 					})));
 	});
 var _user$project$Block$copyOntoGrid = F2(
-	function (_p24, grid) {
-		var _p25 = _p24;
-		var _p26 = _p25._0;
+	function (_p31, grid) {
+		var _p32 = _p31;
+		var _p33 = _p32._0;
 		return A3(
 			_user$project$Grid$copyOnto,
-			_p26.y,
+			_p33.y,
 			_user$project$Block$toGrid(
-				_user$project$Block$Block(_p26)),
+				_user$project$Block$Block(_p33)),
 			grid);
 	});
 
-var _user$project$Main$calculateScore = F2(
-	function (removedLines, oldScore) {
-		calculateScore:
-		while (true) {
-			var _p0 = removedLines;
-			if (_p0 === 0) {
-				return oldScore;
-			} else {
-				var _p1 = _p0;
-				var _v1 = _p1 - 1,
-					_v2 = oldScore + (_p1 * 10);
-				removedLines = _v1;
-				oldScore = _v2;
-				continue calculateScore;
-			}
-		}
+var _user$project$Main$canvasTranslation = F2(
+	function (width, height) {
+		var startY = (0 - _elm_lang$core$Basics$toFloat(height - _user$project$Grid$cellSize)) / 2;
+		var startX = (0 - _elm_lang$core$Basics$toFloat(width - _user$project$Grid$cellSize)) / 2;
+		return A2(
+			_evancz$elm_graphics$Transform$multiply,
+			_evancz$elm_graphics$Transform$scaleY(-1),
+			A2(_evancz$elm_graphics$Transform$translation, startX, startY));
 	});
-var _user$project$Main$removeFullRows = function (game) {
-	var _p2 = _user$project$Grid$removeFullRows(game.grid);
-	var removed = _p2._0;
-	var grid = _p2._1;
-	return _elm_lang$core$Native_Utils.update(
-		game,
-		{
-			grid: grid,
-			score: A2(_user$project$Main$calculateScore, removed, game.score)
-		});
+var _user$project$Main$viewPreview = function (maybeBlock) {
+	var _p0 = maybeBlock;
+	if (_p0.ctor === 'Just') {
+		var _p2 = _p0._0;
+		var _p1 = _user$project$Block$dimensions(_p2);
+		var width = _p1._0;
+		var height = _p1._1;
+		var transformation = A2(_user$project$Main$canvasTranslation, width, height);
+		var preview = _evancz$elm_graphics$Element$toHtml(
+			A3(
+				_evancz$elm_graphics$Collage$collage,
+				width,
+				height,
+				{
+					ctor: '::',
+					_0: A2(
+						_evancz$elm_graphics$Collage$groupTransform,
+						transformation,
+						{
+							ctor: '::',
+							_0: _user$project$Block$renderPreview(_p2),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}));
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('preview'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$h2,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Next block:'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: preview,
+					_1: {ctor: '[]'}
+				}
+			});
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{ctor: '[]'});
+	}
 };
-var _user$project$Main$copyBlockToGrid = function (game) {
-	return _elm_lang$core$Native_Utils.update(
-		game,
-		{
-			grid: A2(_user$project$Block$copyOntoGrid, game.activeBlock, game.grid)
-		});
-};
-var _user$project$Main$landBlock = function (_p3) {
-	return _user$project$Main$removeFullRows(
-		_user$project$Main$copyBlockToGrid(_p3));
-};
-var _user$project$Main$modifyActiveBlock = F2(
-	function (fn, game) {
-		var _p4 = A2(fn, game.grid, game.activeBlock);
-		if (_p4.ctor === 'Ok') {
-			return _elm_lang$core$Native_Utils.update(
-				game,
-				{activeBlock: _p4._0});
-		} else {
-			return game;
-		}
-	});
-var _user$project$Main$setBoost = F2(
-	function (onOff, game) {
-		return _elm_lang$core$Native_Utils.update(
-			game,
-			{boost: onOff});
-	});
-var _user$project$Main$playFieldSize = {cols: 10, rows: 20};
-var _user$project$Main$playFieldDimensions = {width: _user$project$Main$playFieldSize.cols * _user$project$Grid$cellSize, height: _user$project$Main$playFieldSize.rows * _user$project$Grid$cellSize};
-var _user$project$Main$canvasTranslation = function () {
-	var startY = (0 - _elm_lang$core$Basics$toFloat(_user$project$Main$playFieldDimensions.height - _user$project$Grid$cellSize)) / 2;
-	var startX = (0 - _elm_lang$core$Basics$toFloat(_user$project$Main$playFieldDimensions.width - _user$project$Grid$cellSize)) / 2;
-	return A2(
-		_evancz$elm_graphics$Transform$multiply,
-		_evancz$elm_graphics$Transform$scaleY(-1),
-		A2(_evancz$elm_graphics$Transform$translation, startX, startY));
-}();
 var _user$project$Main$viewPlayField = F2(
 	function (grid, maybeBlock) {
+		var _p3 = _user$project$Grid$dimensions(grid);
+		var gridWidth = _p3._0;
+		var gridHeight = _p3._1;
+		var transformation = A2(_user$project$Main$canvasTranslation, gridWidth, gridHeight);
 		var forms = function () {
-			var _p5 = maybeBlock;
-			if (_p5.ctor === 'Just') {
+			var _p4 = maybeBlock;
+			if (_p4.ctor === 'Just') {
 				return {
 					ctor: '::',
 					_0: A3(_user$project$Grid$render, 0, 0, grid),
 					_1: {
 						ctor: '::',
-						_0: _user$project$Block$render(_p5._0),
+						_0: _user$project$Block$render(_p4._0),
 						_1: {ctor: '[]'}
 					}
 				};
@@ -12721,31 +13096,86 @@ var _user$project$Main$viewPlayField = F2(
 				_elm_lang$core$Color$gray,
 				A3(
 					_evancz$elm_graphics$Collage$collage,
-					_user$project$Main$playFieldDimensions.width,
-					_user$project$Main$playFieldDimensions.height,
+					gridWidth,
+					gridHeight,
 					{
 						ctor: '::',
-						_0: A2(_evancz$elm_graphics$Collage$groupTransform, _user$project$Main$canvasTranslation, forms),
+						_0: A2(_evancz$elm_graphics$Collage$groupTransform, transformation, forms),
 						_1: {ctor: '[]'}
 					})));
 	});
+var _user$project$Main$calculateScore = F2(
+	function (removedLines, oldScore) {
+		calculateScore:
+		while (true) {
+			var _p5 = removedLines;
+			if (_p5 === 0) {
+				return oldScore;
+			} else {
+				var _p6 = _p5;
+				var _v3 = _p6 - 1,
+					_v4 = oldScore + (_p6 * 10);
+				removedLines = _v3;
+				oldScore = _v4;
+				continue calculateScore;
+			}
+		}
+	});
+var _user$project$Main$removeFullRows = function (game) {
+	var _p7 = _user$project$Grid$removeFullRows(game.grid);
+	var removed = _p7._0;
+	var grid = _p7._1;
+	return _elm_lang$core$Native_Utils.update(
+		game,
+		{
+			grid: grid,
+			score: A2(_user$project$Main$calculateScore, removed, game.score)
+		});
+};
+var _user$project$Main$copyBlockToGrid = function (game) {
+	return _elm_lang$core$Native_Utils.update(
+		game,
+		{
+			grid: A2(_user$project$Block$copyOntoGrid, game.activeBlock, game.grid)
+		});
+};
+var _user$project$Main$modifyActiveBlock = F2(
+	function (fn, game) {
+		var _p8 = A2(fn, game.grid, game.activeBlock);
+		if (_p8.ctor === 'Ok') {
+			return _elm_lang$core$Native_Utils.update(
+				game,
+				{activeBlock: _p8._0});
+		} else {
+			return game;
+		}
+	});
+var _user$project$Main$setBoost = F2(
+	function (onOff, game) {
+		return _elm_lang$core$Native_Utils.update(
+			game,
+			{boost: onOff});
+	});
+var _user$project$Main$nextBlockSpawned = F2(
+	function (game, block) {
+		return _elm_lang$core$Native_Utils.update(
+			game,
+			{
+				nextBlock: _elm_lang$core$Maybe$Just(block)
+			});
+	});
+var _user$project$Main$playFieldSize = {cols: 10, rows: 20};
 var _user$project$Main$boostedTimeToUpdate = 50 * _elm_lang$core$Time$millisecond;
 var _user$project$Main$defaultTimeToUpdate = 400 * _elm_lang$core$Time$millisecond;
-var _user$project$Main$resetTimeToNextUpdate = function (_p6) {
-	var _p7 = _p6;
-	var _p8 = _p7._0;
-	var timeToUpdate = _p8.boost ? _user$project$Main$boostedTimeToUpdate : _user$project$Main$defaultTimeToUpdate;
-	return {
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$Native_Utils.update(
-			_p8,
-			{timeToUpdate: timeToUpdate}),
-		_1: _p7._1
-	};
+var _user$project$Main$resetTimeToNextUpdate = function (game) {
+	var timeToUpdate = game.boost ? _user$project$Main$boostedTimeToUpdate : _user$project$Main$defaultTimeToUpdate;
+	return _elm_lang$core$Native_Utils.update(
+		game,
+		{timeToUpdate: timeToUpdate});
 };
-var _user$project$Main$Game = F5(
-	function (a, b, c, d, e) {
-		return {grid: a, activeBlock: b, score: c, timeToUpdate: d, boost: e};
+var _user$project$Main$Game = F6(
+	function (a, b, c, d, e, f) {
+		return {grid: a, activeBlock: b, nextBlock: c, score: d, timeToUpdate: e, boost: f};
 	});
 var _user$project$Main$Model = function (a) {
 	return {state: a};
@@ -12760,11 +13190,13 @@ var _user$project$Main$Playing = function (a) {
 	return {ctor: 'Playing', _0: a};
 };
 var _user$project$Main$startPlaying = F2(
-	function (model, block) {
-		var game = A5(
+	function (model, _p9) {
+		var _p10 = _p9;
+		var game = A6(
 			_user$project$Main$Game,
 			A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows),
-			block,
+			_p10._0,
+			_elm_lang$core$Maybe$Just(_p10._1),
 			0,
 			_user$project$Main$defaultTimeToUpdate,
 			false);
@@ -12773,30 +13205,6 @@ var _user$project$Main$startPlaying = F2(
 			{
 				state: _user$project$Main$Playing(game)
 			});
-	});
-var _user$project$Main$newBlockSpawned = F2(
-	function (model, block) {
-		var _p9 = model.state;
-		switch (_p9.ctor) {
-			case 'Playing':
-				var _p10 = _p9._0;
-				return A2(_user$project$Block$detectCollisionInGrid, block, _p10.grid) ? _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						state: _user$project$Main$GameOver(_p10.score)
-					}) : _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						state: _user$project$Main$Playing(
-							_elm_lang$core$Native_Utils.update(
-								_p10,
-								{activeBlock: block}))
-					});
-			case 'Initial':
-				return A2(_user$project$Main$startPlaying, model, block);
-			default:
-				return model;
-		}
 	});
 var _user$project$Main$Initial = {ctor: 'Initial'};
 var _user$project$Main$init = A2(
@@ -12807,17 +13215,80 @@ var _user$project$Main$NoOp = {ctor: 'NoOp'};
 var _user$project$Main$NextBlock = function (a) {
 	return {ctor: 'NextBlock', _0: a};
 };
-var _user$project$Main$spawnNewBlock = A2(_elm_lang$core$Random$generate, _user$project$Main$NextBlock, _user$project$Block$getRandom);
+var _user$project$Main$spawnNextBlock = A2(_elm_lang$core$Random$generate, _user$project$Main$NextBlock, _user$project$Block$getRandom);
+var _user$project$Main$attemptNextBlock = function (game) {
+	var _p11 = game.nextBlock;
+	if (_p11.ctor === 'Just') {
+		var _p12 = _p11._0;
+		return A2(_user$project$Block$detectCollisionInGrid, _p12, game.grid) ? A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_user$project$Main$GameOver(game.score),
+			{ctor: '[]'}) : A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_user$project$Main$Playing(
+				_elm_lang$core$Native_Utils.update(
+					game,
+					{activeBlock: _p12, nextBlock: _elm_lang$core$Maybe$Nothing})),
+			{
+				ctor: '::',
+				_0: _user$project$Main$spawnNextBlock,
+				_1: {ctor: '[]'}
+			});
+	} else {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_user$project$Main$Playing(game),
+			{ctor: '[]'});
+	}
+};
+var _user$project$Main$landBlock = function (_p13) {
+	return _user$project$Main$attemptNextBlock(
+		_user$project$Main$removeFullRows(
+			_user$project$Main$copyBlockToGrid(_p13)));
+};
+var _user$project$Main$advanceGame = function (game) {
+	var _p14 = A3(_user$project$Block$moveYOn, 1, game.grid, game.activeBlock);
+	if (_p14.ctor === 'Ok') {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_user$project$Main$Playing(
+				_elm_lang$core$Native_Utils.update(
+					game,
+					{activeBlock: _p14._0})),
+			{ctor: '[]'});
+	} else {
+		return _user$project$Main$landBlock(game);
+	}
+};
+var _user$project$Main$updateGame = F2(
+	function (game, diff) {
+		var timeToUpdate = game.timeToUpdate - diff;
+		return (_elm_lang$core$Native_Utils.cmp(timeToUpdate, 0) < 0) ? _user$project$Main$advanceGame(
+			_user$project$Main$resetTimeToNextUpdate(game)) : A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_user$project$Main$Playing(
+				_elm_lang$core$Native_Utils.update(
+					game,
+					{timeToUpdate: timeToUpdate})),
+			{ctor: '[]'});
+	});
+var _user$project$Main$InitialBlocks = function (a) {
+	return {ctor: 'InitialBlocks', _0: a};
+};
+var _user$project$Main$spawnInitialBlocks = A2(
+	_elm_lang$core$Random$generate,
+	_user$project$Main$InitialBlocks,
+	A2(_elm_lang$core$Random$pair, _user$project$Block$getRandom, _user$project$Block$getRandom));
 var _user$project$Main$togglePlaying = function (model) {
-	var _p11 = model.state;
-	switch (_p11.ctor) {
+	var _p15 = model.state;
+	switch (_p15.ctor) {
 		case 'Playing':
 			return A2(
 				_elm_lang$core$Platform_Cmd_ops['!'],
 				_elm_lang$core$Native_Utils.update(
 					model,
 					{
-						state: _user$project$Main$Paused(_p11._0)
+						state: _user$project$Main$Paused(_p15._0)
 					}),
 				{ctor: '[]'});
 		case 'Paused':
@@ -12826,7 +13297,7 @@ var _user$project$Main$togglePlaying = function (model) {
 				_elm_lang$core$Native_Utils.update(
 					model,
 					{
-						state: _user$project$Main$Playing(_p11._0)
+						state: _user$project$Main$Playing(_p15._0)
 					}),
 				{ctor: '[]'});
 		case 'Initial':
@@ -12835,7 +13306,7 @@ var _user$project$Main$togglePlaying = function (model) {
 				model,
 				{
 					ctor: '::',
-					_0: _user$project$Main$spawnNewBlock,
+					_0: _user$project$Main$spawnInitialBlocks,
 					_1: {ctor: '[]'}
 				});
 		default:
@@ -12846,73 +13317,40 @@ var _user$project$Main$togglePlaying = function (model) {
 					{state: _user$project$Main$Initial}),
 				{
 					ctor: '::',
-					_0: _user$project$Main$spawnNewBlock,
+					_0: _user$project$Main$spawnInitialBlocks,
 					_1: {ctor: '[]'}
 				});
 	}
 };
-var _user$project$Main$advanceGame = function (game) {
-	var _p12 = A3(_user$project$Block$moveYOn, 1, game.grid, game.activeBlock);
-	if (_p12.ctor === 'Ok') {
-		return A2(
-			_elm_lang$core$Platform_Cmd_ops['!'],
-			_elm_lang$core$Native_Utils.update(
-				game,
-				{activeBlock: _p12._0}),
-			{ctor: '[]'});
-	} else {
-		return A2(
-			_elm_lang$core$Platform_Cmd_ops['!'],
-			_user$project$Main$landBlock(game),
-			{
-				ctor: '::',
-				_0: _user$project$Main$spawnNewBlock,
-				_1: {ctor: '[]'}
-			});
-	}
-};
-var _user$project$Main$updateGame = F2(
-	function (game, diff) {
-		var timeToUpdate = game.timeToUpdate - diff;
-		return (_elm_lang$core$Native_Utils.cmp(timeToUpdate, 0) < 0) ? _user$project$Main$resetTimeToNextUpdate(
-			_user$project$Main$advanceGame(game)) : A2(
-			_elm_lang$core$Platform_Cmd_ops['!'],
-			_elm_lang$core$Native_Utils.update(
-				game,
-				{timeToUpdate: timeToUpdate}),
-			{ctor: '[]'});
-	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p13 = {ctor: '_Tuple2', _0: msg, _1: model.state};
-		_v9_8:
+		var _p16 = {ctor: '_Tuple2', _0: msg, _1: model.state};
+		_v10_9:
 		do {
-			if (_p13.ctor === '_Tuple2') {
-				switch (_p13._0.ctor) {
+			if (_p16.ctor === '_Tuple2') {
+				switch (_p16._0.ctor) {
 					case 'Tick':
-						if (_p13._1.ctor === 'Playing') {
-							var _p14 = A2(_user$project$Main$updateGame, _p13._1._0, _p13._0._0);
-							var updatedGame = _p14._0;
-							var cmd = _p14._1;
+						if (_p16._1.ctor === 'Playing') {
+							var _p17 = A2(_user$project$Main$updateGame, _p16._1._0, _p16._0._0);
+							var updatedGameState = _p17._0;
+							var cmd = _p17._1;
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
 								_elm_lang$core$Native_Utils.update(
 									model,
-									{
-										state: _user$project$Main$Playing(updatedGame)
-									}),
+									{state: updatedGameState}),
 								{
 									ctor: '::',
 									_0: cmd,
 									_1: {ctor: '[]'}
 								});
 						} else {
-							break _v9_8;
+							break _v10_9;
 						}
 					case 'TogglePlay':
 						return _user$project$Main$togglePlaying(model);
 					case 'Left':
-						if (_p13._1.ctor === 'Playing') {
+						if (_p16._1.ctor === 'Playing') {
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
 								_elm_lang$core$Native_Utils.update(
@@ -12922,14 +13360,14 @@ var _user$project$Main$update = F2(
 											A2(
 												_user$project$Main$modifyActiveBlock,
 												_user$project$Block$moveOn(-1),
-												_p13._1._0))
+												_p16._1._0))
 									}),
 								{ctor: '[]'});
 						} else {
-							break _v9_8;
+							break _v10_9;
 						}
 					case 'Right':
-						if (_p13._1.ctor === 'Playing') {
+						if (_p16._1.ctor === 'Playing') {
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
 								_elm_lang$core$Native_Utils.update(
@@ -12939,52 +13377,70 @@ var _user$project$Main$update = F2(
 											A2(
 												_user$project$Main$modifyActiveBlock,
 												_user$project$Block$moveOn(1),
-												_p13._1._0))
+												_p16._1._0))
 									}),
 								{ctor: '[]'});
 						} else {
-							break _v9_8;
+							break _v10_9;
 						}
 					case 'Rotate':
-						if (_p13._1.ctor === 'Playing') {
+						if (_p16._1.ctor === 'Playing') {
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
 								_elm_lang$core$Native_Utils.update(
 									model,
 									{
 										state: _user$project$Main$Playing(
-											A2(_user$project$Main$modifyActiveBlock, _user$project$Block$rotateOn, _p13._1._0))
+											A2(_user$project$Main$modifyActiveBlock, _user$project$Block$rotateOn, _p16._1._0))
 									}),
 								{ctor: '[]'});
 						} else {
-							break _v9_8;
+							break _v10_9;
 						}
 					case 'Boost':
-						if (_p13._1.ctor === 'Playing') {
+						if (_p16._1.ctor === 'Playing') {
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
 								_elm_lang$core$Native_Utils.update(
 									model,
 									{
 										state: _user$project$Main$Playing(
-											A2(_user$project$Main$setBoost, _p13._0._0, _p13._1._0))
+											A2(_user$project$Main$setBoost, _p16._0._0, _p16._1._0))
 									}),
 								{ctor: '[]'});
 						} else {
-							break _v9_8;
+							break _v10_9;
 						}
 					case 'Reset':
 						return _user$project$Main$init;
+					case 'InitialBlocks':
+						if (_p16._1.ctor === 'Initial') {
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								A2(_user$project$Main$startPlaying, model, _p16._0._0),
+								{ctor: '[]'});
+						} else {
+							break _v10_9;
+						}
 					case 'NextBlock':
-						return A2(
-							_elm_lang$core$Platform_Cmd_ops['!'],
-							A2(_user$project$Main$newBlockSpawned, model, _p13._0._0),
-							{ctor: '[]'});
+						if (_p16._1.ctor === 'Playing') {
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										state: _user$project$Main$Playing(
+											A2(_user$project$Main$nextBlockSpawned, _p16._1._0, _p16._0._0))
+									}),
+								{ctor: '[]'});
+						} else {
+							break _v10_9;
+						}
 					default:
-						break _v9_8;
+						break _v10_9;
 				}
 			} else {
-				break _v9_8;
+				break _v10_9;
 			}
 		} while(false);
 		return A2(
@@ -12997,8 +13453,8 @@ var _user$project$Main$Boost = function (a) {
 	return {ctor: 'Boost', _0: a};
 };
 var _user$project$Main$handleUpKey = function (code) {
-	var _p15 = code;
-	switch (_p15) {
+	var _p18 = code;
+	switch (_p18) {
 		case 83:
 			return _user$project$Main$Boost(false);
 		case 40:
@@ -13011,8 +13467,8 @@ var _user$project$Main$Rotate = {ctor: 'Rotate'};
 var _user$project$Main$Right = {ctor: 'Right'};
 var _user$project$Main$Left = {ctor: 'Left'};
 var _user$project$Main$handleDownKey = function (code) {
-	var _p16 = code;
-	switch (_p16) {
+	var _p19 = code;
+	switch (_p19) {
 		case 65:
 			return _user$project$Main$Left;
 		case 68:
@@ -13035,8 +13491,8 @@ var _user$project$Main$handleDownKey = function (code) {
 };
 var _user$project$Main$TogglePlay = {ctor: 'TogglePlay'};
 var _user$project$Main$view = function (model) {
-	var _p17 = model.state;
-	switch (_p17.ctor) {
+	var _p20 = model.state;
+	switch (_p20.ctor) {
 		case 'GameOver':
 			return A2(
 				_elm_lang$html$Html$div,
@@ -13047,7 +13503,7 @@ var _user$project$Main$view = function (model) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'GAME OVER with score: ',
-							_elm_lang$core$Basics$toString(_p17._0))),
+							_elm_lang$core$Basics$toString(_p20._0))),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -13073,7 +13529,7 @@ var _user$project$Main$view = function (model) {
 					}
 				});
 		case 'Playing':
-			var _p18 = _p17._0;
+			var _p21 = _p20._0;
 			return A2(
 				_elm_lang$html$Html$div,
 				{ctor: '[]'},
@@ -13083,13 +13539,28 @@ var _user$project$Main$view = function (model) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'Score: ',
-							_elm_lang$core$Basics$toString(_p18.score))),
+							_elm_lang$core$Basics$toString(_p21.score))),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_user$project$Main$viewPlayField,
-							_p18.grid,
-							_elm_lang$core$Maybe$Just(_p18.activeBlock)),
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('game-container'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_user$project$Main$viewPlayField,
+									_p21.grid,
+									_elm_lang$core$Maybe$Just(_p21.activeBlock)),
+								_1: {
+									ctor: '::',
+									_0: _user$project$Main$viewPreview(_p21.nextBlock),
+									_1: {ctor: '[]'}
+								}
+							}),
 						_1: {
 							ctor: '::',
 							_0: A2(
@@ -13124,7 +13595,7 @@ var _user$project$Main$view = function (model) {
 					}
 				});
 		case 'Paused':
-			var _p19 = _p17._0;
+			var _p22 = _p20._0;
 			return A2(
 				_elm_lang$html$Html$div,
 				{ctor: '[]'},
@@ -13134,10 +13605,10 @@ var _user$project$Main$view = function (model) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'Score: ',
-							_elm_lang$core$Basics$toString(_p19.score))),
+							_elm_lang$core$Basics$toString(_p22.score))),
 					_1: {
 						ctor: '::',
-						_0: A2(_user$project$Main$viewPlayField, _p19.grid, _elm_lang$core$Maybe$Nothing),
+						_0: A2(_user$project$Main$viewPlayField, _p22.grid, _elm_lang$core$Maybe$Nothing),
 						_1: {
 							ctor: '::',
 							_0: A2(
@@ -13223,8 +13694,8 @@ var _user$project$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
 var _user$project$Main$subscriptions = function (model) {
-	var _p20 = model.state;
-	if (_p20.ctor === 'Playing') {
+	var _p23 = model.state;
+	if (_p23.ctor === 'Playing') {
 		return _elm_lang$core$Platform_Sub$batch(
 			{
 				ctor: '::',
