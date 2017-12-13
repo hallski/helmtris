@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import Grid
 import Block
-
 import AnimationFrame as AF
 import Char exposing (KeyCode)
 import Collage
@@ -18,21 +17,27 @@ import Transform exposing (..)
 
 
 defaultTimeToUpdate : Time.Time
-defaultTimeToUpdate = 450 * Time.millisecond
+defaultTimeToUpdate =
+    450 * Time.millisecond
 
 
 boostedTimeToUpdate : Time.Time
-boostedTimeToUpdate = 50 * Time.millisecond
+boostedTimeToUpdate =
+    50 * Time.millisecond
 
 
-playFieldSize : { cols : Int, rows : Int}
-playFieldSize = { cols = 10, rows = 20 }
+playFieldSize : { cols : Int, rows : Int }
+playFieldSize =
+    { cols = 10, rows = 20 }
+
 
 rowsBetweenLevels : Int
-rowsBetweenLevels = 10
+rowsBetweenLevels =
+    10
 
 
-type alias Score = Int
+type alias Score =
+    Int
 
 
 type alias Game =
@@ -59,12 +64,14 @@ type alias Model =
     }
 
 
-init : (Model, Cmd Msg)
+init : ( Model, Cmd Msg )
 init =
     Model Initial ! []
 
 
+
 -- Update
+
 
 type Msg
     = Tick Time.Time
@@ -74,49 +81,50 @@ type Msg
     | Rotate
     | Boost Bool
     | Reset
-    | InitialBlocks (Block.Block, Block.Block)
+    | InitialBlocks ( Block.Block, Block.Block )
     | NextBlock Block.Block
     | NoOp -- Needed by handleKey
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case (msg, model.state) of
-        (Tick diff, Playing game) ->
+    case ( msg, model.state ) of
+        ( Tick diff, Playing game ) ->
             let
-                (updatedGameState, cmd) = updateGame game diff
+                ( updatedGameState, cmd ) =
+                    updateGame game diff
             in
                 { model | state = updatedGameState } ! [ cmd ]
 
-        (TogglePlay, _) ->
+        ( TogglePlay, _ ) ->
             togglePlaying model
 
-        (Left, Playing game)->
+        ( Left, Playing game ) ->
             playingNoCmd model <| modifyActiveBlock (Block.moveOn -1) game
 
-        (Right, Playing game) ->
+        ( Right, Playing game ) ->
             playingNoCmd model <| modifyActiveBlock (Block.moveOn 1) game
 
-        (Rotate, Playing game) ->
+        ( Rotate, Playing game ) ->
             playingNoCmd model <| modifyActiveBlock Block.rotateOn game
 
-        (Boost onOff, Playing game) ->
+        ( Boost onOff, Playing game ) ->
             playingNoCmd model <| setBoost onOff game
 
-        (Reset, _) ->
+        ( Reset, _ ) ->
             init
 
-        (InitialBlocks blocks, Initial) ->
+        ( InitialBlocks blocks, Initial ) ->
             startPlaying model blocks ! []
 
-        (NextBlock block, Playing game) ->
+        ( NextBlock block, Playing game ) ->
             playingNoCmd model <| nextBlockSpawned game block
 
         _ ->
             model ! []
 
 
-playingNoCmd : Model -> Game -> (Model, Cmd Msg)
+playingNoCmd : Model -> Game -> ( Model, Cmd Msg )
 playingNoCmd model game =
     { model | state = Playing game } ! []
 
@@ -132,7 +140,7 @@ spawnInitialBlocks =
         |> Random.generate InitialBlocks
 
 
-togglePlaying : Model -> (Model, Cmd Msg)
+togglePlaying : Model -> ( Model, Cmd Msg )
 togglePlaying model =
     case model.state of
         Playing game ->
@@ -148,11 +156,14 @@ togglePlaying model =
             { model | state = Initial } ! [ spawnInitialBlocks ]
 
 
-startPlaying : Model -> (Block.Block, Block.Block) -> Model
-startPlaying model (block, nextBlock) =
+startPlaying : Model -> ( Block.Block, Block.Block ) -> Model
+startPlaying model ( block, nextBlock ) =
     let
-        grid = Grid.empty playFieldSize.cols playFieldSize.rows
-        game = Game grid block (Just nextBlock) 0 defaultTimeToUpdate False 1 rowsBetweenLevels
+        grid =
+            Grid.empty playFieldSize.cols playFieldSize.rows
+
+        game =
+            Game grid block (Just nextBlock) 0 defaultTimeToUpdate False 1 rowsBetweenLevels
     in
         { model | state = Playing game }
 
@@ -192,20 +203,25 @@ calculateScore removedLines oldScore =
             calculateScore (n - 1) (oldScore + n * 10)
 
 
-removeFullRows : Game -> (Int, Game)
+removeFullRows : Game -> ( Int, Game )
 removeFullRows game =
     let
-        (removed, grid) = Grid.removeFullRows game.grid
-        score = calculateScore removed game.score
+        ( removed, grid ) =
+            Grid.removeFullRows game.grid
+
+        score =
+            calculateScore removed game.score
     in
-        (removed, { game | grid = grid, score = score })
+        ( removed, { game | grid = grid, score = score } )
 
-updateLevel : (Int, Game) -> Game
-updateLevel (removedRows, game) =
+
+updateLevel : ( Int, Game ) -> Game
+updateLevel ( removedRows, game ) =
     let
-        rowsUntilNextLevel = game.rowsToNewLevel - removedRows
+        rowsUntilNextLevel =
+            game.rowsToNewLevel - removedRows
 
-        (level, rows) =
+        ( level, rows ) =
             if rowsUntilNextLevel <= 0 then
                 ( game.level + 1, rowsBetweenLevels + rowsUntilNextLevel )
             else
@@ -214,25 +230,25 @@ updateLevel (removedRows, game) =
         { game | level = level, rowsToNewLevel = rows }
 
 
-
-
-attemptNextBlock : Game -> (GameState, Cmd Msg)
+attemptNextBlock : Game -> ( GameState, Cmd Msg )
 attemptNextBlock game =
     case game.nextBlock of
         Just nextBlock ->
             if Block.detectCollisionInGrid nextBlock game.grid then
                 GameOver game.score ! []
             else
-                Playing { game
+                Playing
+                    { game
                         | activeBlock = nextBlock
                         , nextBlock = Nothing
-                        } ! [ spawnNextBlock ]
+                    }
+                    ! [ spawnNextBlock ]
 
         Nothing ->
             Playing game ! []
 
 
-landBlock : Game -> (GameState, Cmd Msg)
+landBlock : Game -> ( GameState, Cmd Msg )
 landBlock game =
     copyBlockToGrid game
         |> removeFullRows
@@ -252,10 +268,11 @@ resetTimeToNextUpdate game =
         { game | timeToUpdate = timeToUpdate }
 
 
-updateGame : Game -> Time.Time -> (GameState, Cmd Msg)
+updateGame : Game -> Time.Time -> ( GameState, Cmd Msg )
 updateGame game diff =
     let
-        timeToUpdate = game.timeToUpdate - diff
+        timeToUpdate =
+            game.timeToUpdate - diff
     in
         if timeToUpdate < 0 then
             advanceGame <| resetTimeToNextUpdate game
@@ -263,7 +280,7 @@ updateGame game diff =
             Playing { game | timeToUpdate = timeToUpdate } ! []
 
 
-advanceGame : Game -> (GameState, Cmd Msg)
+advanceGame : Game -> ( GameState, Cmd Msg )
 advanceGame game =
     case Block.moveYOn 1 game.grid game.activeBlock of
         Ok block ->
@@ -273,7 +290,9 @@ advanceGame game =
             landBlock game
 
 
+
 -- Subscriptions
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -288,37 +307,57 @@ subscriptions model =
         _ ->
             Sub.none
 
+
 handleDownKey : KeyCode -> Msg
 handleDownKey code =
     case code of
         -- WASD
-        65 -> Left
-        68 -> Right
-        87 -> Rotate
-        83 -> Boost True
+        65 ->
+            Left
+
+        68 ->
+            Right
+
+        87 ->
+            Rotate
+
+        83 ->
+            Boost True
 
         -- Arrow keys
-        37 -> Left
-        38 -> Rotate
-        39 -> Right
-        40 -> Boost True
+        37 ->
+            Left
 
-        _ -> NoOp
+        38 ->
+            Rotate
+
+        39 ->
+            Right
+
+        40 ->
+            Boost True
+
+        _ ->
+            NoOp
+
 
 handleUpKey : KeyCode -> Msg
 handleUpKey code =
     case code of
         -- WASD
-        83 -> Boost False
+        83 ->
+            Boost False
 
         -- Arrow keys
-        40 -> Boost False
+        40 ->
+            Boost False
 
-        _ -> NoOp
+        _ ->
+            NoOp
+
 
 
 -- View
-
 {--
   Simplify the rendering code by applying a transformation on all forms drawn.
 
@@ -326,11 +365,16 @@ handleUpKey code =
   forms anchored to the center as well, flip the Y axis and translate origin to be half a cellSize
   in from the top left.
 --}
+
+
 canvasTranslation : Int -> Int -> Transform.Transform
 canvasTranslation width height =
     let
-        startX = -(toFloat <| width - Grid.cellSize) / 2
-        startY = -(toFloat <| height - Grid.cellSize) / 2
+        startX =
+            -(toFloat <| width - Grid.cellSize) / 2
+
+        startY =
+            -(toFloat <| height - Grid.cellSize) / 2
     in
         Transform.multiply (Transform.scaleY -1) (Transform.translation startX startY)
 
@@ -339,34 +383,40 @@ view : Model -> Html Msg
 view model =
     case model.state of
         GameOver score ->
-            div [ ]
-                [ text <| "GAME OVER with score: " ++ (toString score)
+            div []
+                [ h1 []
+                    [ text "Helmtris" ]
+                , text <| "GAME OVER with score: " ++ (toString score)
                 , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) Nothing
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
         Playing game ->
-            div [ ]
-                [ text <| "Score: " ++ (toString game.score)
-                , div [ class "game-container" ]
-                      [ viewPlayField game.grid <| Just game.activeBlock
-                      , viewGameInfo game
-                      ]
+            div []
+                [ h1 []
+                    [ text "Helmtris" ]
+                , div
+                    [ class "game-container" ]
+                    [ viewPlayField game.grid <| Just game.activeBlock
+                    , viewGameInfo game
+                    ]
                 , button [ onClick TogglePlay ] [ text "Pause" ]
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
         Paused game ->
-            div [ ]
-                [ text <| "Score: " ++ (toString game.score)
+            div []
+                [ h1 []
+                    [ text "Helmtris" ]
                 , viewPlayField game.grid <| Nothing
                 , button [ onClick TogglePlay ] [ text "Play" ]
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
         Initial ->
-            div [ ]
-                [ text <| "Press Play to start playing"
+            div []
+                [ h1 []
+                    [ text "Helmtris" ]
                 , viewPlayField (Grid.empty playFieldSize.cols playFieldSize.rows) Nothing
                 , button [ onClick TogglePlay ] [ text "Play" ]
                 , button [ onClick Reset ] [ text "Reset" ]
@@ -378,16 +428,24 @@ viewGameInfo game =
     case game.nextBlock of
         Just block ->
             let
-                (width, height) = Block.dimensions block
-                transformation = canvasTranslation width height
-                forms = [ Block.renderPreview block ]
+                ( width, height ) =
+                    Block.dimensions block
 
-                preview = Collage.collage width height
-                            [ Collage.groupTransform transformation forms ]
-                            |> Element.toHtml
+                transformation =
+                    canvasTranslation width height
+
+                forms =
+                    [ Block.renderPreview block ]
+
+                preview =
+                    Collage.collage width
+                        height
+                        [ Collage.groupTransform transformation forms ]
+                        |> Element.toHtml
             in
                 div [ class "preview" ]
-                    [ h2 [] [ text <| "Level: " ++ toString game.level]
+                    [ h2 [] [ text <| "Score: " ++ toString game.score ]
+                    , h2 [] [ text <| "Level: " ++ toString game.level ]
                     , h2 [] [ text "Next block:" ]
                     , preview
                     ]
@@ -399,25 +457,32 @@ viewGameInfo game =
 viewPlayField : Grid.Grid -> Maybe Block.Block -> Html Msg
 viewPlayField grid maybeBlock =
     let
-        forms = case maybeBlock of
-            Just block ->
-                [ Grid.render 0 0 grid
-                , Block.render block
-                ]
+        forms =
+            case maybeBlock of
+                Just block ->
+                    [ Grid.render 0 0 grid
+                    , Block.render block
+                    ]
 
-            Nothing ->
-                [ Grid.render 0 0 grid ]
+                Nothing ->
+                    [ Grid.render 0 0 grid ]
 
-        (gridWidth, gridHeight) = Grid.dimensions grid
-        transformation = canvasTranslation gridWidth gridHeight
+        ( gridWidth, gridHeight ) =
+            Grid.dimensions grid
+
+        transformation =
+            canvasTranslation gridWidth gridHeight
     in
-        Collage.collage gridWidth gridHeight
+        Collage.collage gridWidth
+            gridHeight
             [ Collage.groupTransform transformation forms ]
             |> Element.color gray
             |> Element.toHtml
 
 
+
 -- Main
+
 
 main : Program Never Model Msg
 main =
