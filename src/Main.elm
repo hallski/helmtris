@@ -350,7 +350,7 @@ view model =
                 [ text <| "Score: " ++ (toString game.score)
                 , div [ class "game-container" ]
                       [ viewPlayField game.grid <| Just game.activeBlock
-                      , viewPreview game
+                      , viewGameInfo game
                       ]
                 , button [ onClick TogglePlay ] [ text "Pause" ]
                 , button [ onClick Reset ] [ text "Reset" ]
@@ -373,8 +373,8 @@ view model =
                 ]
 
 
-viewPreview : Game -> Html Msg
-viewPreview game =
+viewGameInfo : Game -> Html Msg
+viewGameInfo game =
     case game.nextBlock of
         Just block ->
             let
