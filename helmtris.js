@@ -13009,7 +13009,7 @@ var _user$project$Main$canvasTranslation = F2(
 			_evancz$elm_graphics$Transform$scaleY(-1),
 			A2(_evancz$elm_graphics$Transform$translation, startX, startY));
 	});
-var _user$project$Main$viewPreview = function (game) {
+var _user$project$Main$viewGameInfo = function (game) {
 	var _p0 = game.nextBlock;
 	if (_p0.ctor === 'Just') {
 		var _p2 = _p0._0;
@@ -13049,8 +13049,8 @@ var _user$project$Main$viewPreview = function (game) {
 						_0: _elm_lang$html$Html$text(
 							A2(
 								_elm_lang$core$Basics_ops['++'],
-								'Level: ',
-								_elm_lang$core$Basics$toString(game.level))),
+								'Score: ',
+								_elm_lang$core$Basics$toString(game.score))),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -13060,13 +13060,28 @@ var _user$project$Main$viewPreview = function (game) {
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text('Next block:'),
+							_0: _elm_lang$html$Html$text(
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'Level: ',
+									_elm_lang$core$Basics$toString(game.level))),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
 						ctor: '::',
-						_0: preview,
-						_1: {ctor: '[]'}
+						_0: A2(
+							_elm_lang$html$Html$h2,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Next block:'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: preview,
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			});
@@ -13516,32 +13531,43 @@ var _user$project$Main$view = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'GAME OVER with score: ',
-							_elm_lang$core$Basics$toString(_p23._0))),
+					_0: A2(
+						_elm_lang$html$Html$h1,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Helmtris'),
+							_1: {ctor: '[]'}
+						}),
 					_1: {
 						ctor: '::',
-						_0: A2(
-							_user$project$Main$viewPlayField,
-							A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows),
-							_elm_lang$core$Maybe$Nothing),
+						_0: _elm_lang$html$Html$text(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'GAME OVER with score: ',
+								_elm_lang$core$Basics$toString(_p23._0))),
 						_1: {
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$button,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Reset),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('Reset'),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
+								_user$project$Main$viewPlayField,
+								A2(_user$project$Grid$empty, _user$project$Main$playFieldSize.cols, _user$project$Main$playFieldSize.rows),
+								_elm_lang$core$Maybe$Nothing),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Reset),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Reset'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				});
@@ -13552,11 +13578,14 @@ var _user$project$Main$view = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'Score: ',
-							_elm_lang$core$Basics$toString(_p24.score))),
+					_0: A2(
+						_elm_lang$html$Html$h1,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Helmtris'),
+							_1: {ctor: '[]'}
+						}),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -13574,7 +13603,7 @@ var _user$project$Main$view = function (model) {
 									_elm_lang$core$Maybe$Just(_p24.activeBlock)),
 								_1: {
 									ctor: '::',
-									_0: _user$project$Main$viewPreview(_p24),
+									_0: _user$project$Main$viewGameInfo(_p24),
 									_1: {ctor: '[]'}
 								}
 							}),
@@ -13612,20 +13641,22 @@ var _user$project$Main$view = function (model) {
 					}
 				});
 		case 'Paused':
-			var _p25 = _p23._0;
 			return A2(
 				_elm_lang$html$Html$div,
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'Score: ',
-							_elm_lang$core$Basics$toString(_p25.score))),
+					_0: A2(
+						_elm_lang$html$Html$h1,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Helmtris'),
+							_1: {ctor: '[]'}
+						}),
 					_1: {
 						ctor: '::',
-						_0: A2(_user$project$Main$viewPlayField, _p25.grid, _elm_lang$core$Maybe$Nothing),
+						_0: A2(_user$project$Main$viewPlayField, _p23._0.grid, _elm_lang$core$Maybe$Nothing),
 						_1: {
 							ctor: '::',
 							_0: A2(
@@ -13665,7 +13696,14 @@ var _user$project$Main$view = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text('Press Play to start playing'),
+					_0: A2(
+						_elm_lang$html$Html$h1,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Helmtris'),
+							_1: {ctor: '[]'}
+						}),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -13711,8 +13749,8 @@ var _user$project$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
 var _user$project$Main$subscriptions = function (model) {
-	var _p26 = model.state;
-	if (_p26.ctor === 'Playing') {
+	var _p25 = model.state;
+	if (_p25.ctor === 'Playing') {
 		return _elm_lang$core$Platform_Sub$batch(
 			{
 				ctor: '::',
